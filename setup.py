@@ -11,4 +11,9 @@ setup(name="mwdblib",
       author="psrok1",
       package_dir={'mwdblib': 'src'},
       packages=['mwdblib'],
-      install_requires=open("requirements.txt").read().splitlines())
+      url="https://github.com/CERT-Polska/mwdblib",
+      install_requires=open("requirements.txt").read().splitlines(),
+      classifiers=[
+        "Programming Language :: Python",
+        "Operating System :: OS Independent",
+      ])
