@@ -60,12 +60,15 @@ class MalwarecageObject(MalwarecageElement):
     def create(api, data):
         from .file import MalwarecageFile
         from .config import MalwarecageConfig
+        from .blob import MalwarecageBlob
         type = data["type"]
         data = {k: v for k, v in data.items() if k != "type"}
         if type == "file":
             return MalwarecageFile(api, data)
         elif type == "static_config":
             return MalwarecageConfig(api, data)
+        elif type == "blob":
+            return MalwarecageBlob(api, data)
         else:
             return None
 
@@ -81,7 +84,7 @@ class MalwarecageObject(MalwarecageElement):
 
     @lazy_property("object/{id}/comment")
     def comments(self):
-        return map(lambda c: MalwarecageComment(self.api, c, self), self.data["comments"]) \
+        return list(map(lambda c: MalwarecageComment(self.api, c, self), self.data["comments"])) \
             if "comments" in self.data else None
 
     @lazy_property("object/{id}/meta")
@@ -100,12 +103,12 @@ class MalwarecageObject(MalwarecageElement):
 
     @lazy_property()
     def parents(self):
-        return map(lambda o: MalwarecageObject.create(self.api, o), self.data["parents"]) \
+        return list(map(lambda o: MalwarecageObject.create(self.api, o), self.data["parents"])) \
             if "parents" in self.data else None
 
     @lazy_property()
     def children(self):
-        return map(lambda o: MalwarecageObject.create(self.api, o), self.data["children"]) \
+        return list(map(lambda o: MalwarecageObject.create(self.api, o), self.data["children"])) \
             if "children" in self.data else None
 
     def add_tag(self, tag):
