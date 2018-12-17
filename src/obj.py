@@ -67,7 +67,7 @@ class MalwarecageObject(MalwarecageElement):
             return MalwarecageFile(api, data)
         elif type == "static_config":
             return MalwarecageConfig(api, data)
-        elif type == "blob":
+        elif type == "text_blob":
             return MalwarecageBlob(api, data)
         else:
             return None
