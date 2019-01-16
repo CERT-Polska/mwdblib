@@ -111,6 +111,11 @@ class MalwarecageObject(MalwarecageElement):
         return list(map(lambda o: MalwarecageObject.create(self.api, o), self.data["children"])) \
             if "children" in self.data else None
 
+    def add_child(self, child):
+        self.api.put("object/{parent}/child/{child}".format(parent=self.id, child=child.id))
+        if "children" in self.data:
+            del self.data["children"]
+
     def add_tag(self, tag):
         self.api.put("object/{id}/tag".format(**self.data), json={
             "tag": tag

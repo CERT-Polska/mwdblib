@@ -21,29 +21,34 @@ class Malwarecage(object):
         }, noauth=True)
         self.api.set_api_key(result["token"])
 
-    def recent_files(self):
+    def _recent(self, endpoint):
         try:
             for page in itertools.count(start=1):
-                result = self.api.get("file", params={"page": page})
-                if "files" not in result or len(result["files"]) == 0:
+                result = self.api.get(endpoint, params={"page": page})
+                key = endpoint+"s"
+                if key not in result or len(result[key]) == 0:
                     return
-                for file in result["files"]:
-                    yield MalwarecageFile(self.api, file)
+                for obj in result[key]:
+                    yield MalwarecageObject.create(self.api, obj)
         except requests.exceptions.HTTPError as e:
             if e.response.status_code >= 500:
                 raise e
 
+    def recent_objects(self):
+        return self._recent("object")
+
+    def recent_files(self):
+        return self._recent("file")
+
     def recent_configs(self):
-        try:
-            for page in itertools.count(start=1):
-                result = self.api.get("config", params={"page": page})
-                if "configs" not in result or len(result["configs"]) == 0:
-                    return
-                for file in result["configs"]:
-                    yield MalwarecageConfig(self.api, file)
-        except requests.exceptions.HTTPError as e:
-            if e.response.status_code >= 500:
-                raise e
+        return self._recent("config")
+
+    def recent_blobs(self):
+        return self._recent("blob")
+
+    def query(self, hash):
+        result = self.api.get("object/{}".format(hash))
+        return MalwarecageObject.create(self.api, result)
 
     def query_file(self, hash):
         result = self.api.get("file/{}".format(hash))
@@ -51,6 +56,10 @@ class Malwarecage(object):
 
     def query_config(self, hash):
         result = self.api.get("config/{}".format(hash))
+        return MalwarecageConfig(self.api, result)
+
+    def query_blob(self, hash):
+        result = self.api.get("blob/{}".format(hash))
         return MalwarecageConfig(self.api, result)
 
     def search(self, query):
