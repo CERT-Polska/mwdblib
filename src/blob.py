@@ -1,4 +1,4 @@
-from .obj import MalwarecageObject, lazy_property
+from .object import MalwarecageObject, lazy_property
 
 
 class MalwarecageBlob(MalwarecageObject):
@@ -15,6 +15,27 @@ class MalwarecageBlob(MalwarecageObject):
     @lazy_property()
     def blob_type(self):
         return self.data.get("blob_type")
+
+    @property
+    def name(self):
+        """
+        Alias for blob_name property
+        """
+        return self.blob_name
+
+    @property
+    def size(self):
+        """
+        Alias for blob_size property
+        """
+        return self.blob_size
+
+    @property
+    def type(self):
+        """
+        Alias for blob_type property
+        """
+        return self.blob_type
 
     @lazy_property()
     def content(self):

@@ -1,4 +1,6 @@
-from .obj import MalwarecageObject, lazy_property
+import warnings
+
+from .object import MalwarecageObject, lazy_property
 
 
 class MalwarecageFile(MalwarecageObject):
@@ -11,10 +13,6 @@ class MalwarecageFile(MalwarecageObject):
     @lazy_property()
     def sha1(self):
         return self.data.get("sha1")
-
-    @lazy_property()
-    def sha256(self):
-        return self.data.get("sha256")
 
     @lazy_property()
     def sha512(self):
@@ -40,6 +38,36 @@ class MalwarecageFile(MalwarecageObject):
     def file_type(self):
         return self.data.get("file_type")
 
-    def download_content(self):
+    @property
+    def name(self):
+        """
+        Alias for file_name property
+        """
+        return self.file_name
+
+    @property
+    def size(self):
+        """
+        Alias for file_size property
+        """
+        return self.file_size
+
+    @property
+    def type(self):
+        """
+        Alias for file_type property
+        """
+        return self.file_type
+
+    def download(self):
+        """
+        Downloads file contents
+        :return: File contents
+        """
         token = self.api.post("request/sample/{id}".format(**self.data))["url"].split("/")[-1]
         return self.api.get("download/{}".format(token), raw=True)
+
+    def download_content(self):
+        warnings.warn("download_content() is deprecated. Use download() method.", DeprecationWarning)
+        return self.download()
+

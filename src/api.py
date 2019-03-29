@@ -1,3 +1,6 @@
+import base64
+import json
+
 try:
     from urlparse import urljoin
 except ImportError:
@@ -21,6 +24,11 @@ class MalwarecageAPI(object):
     def set_api_key(self, api_key):
         self.api_key = api_key
         self.session.headers.update({'Authorization': 'Bearer {}'.format(self.api_key)})
+
+    def logged_user(self):
+        if self.api_key is None:
+            return None
+        return json.loads(base64.b64decode(self.api_key.split(".")[1]+"=="))["login"]
 
     def request(self, method, url, noauth=False, raw=False, *args, **kwargs):
         # Check if authenticated yet

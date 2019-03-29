@@ -1,4 +1,4 @@
-from .obj import MalwarecageObject, lazy_property
+from .object import MalwarecageObject, lazy_property
 
 
 class MalwarecageConfig(MalwarecageObject):
