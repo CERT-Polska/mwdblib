@@ -1,0 +1,19 @@
+image: python:3.6
+test_style:
+  script:
+  - pip3 install flake8
+  - flake8 . --exclude=venv --max-line-length 120  # imo 120 is way too much
+
+image: python:3.6
+test_code:
+  script:
+  - pip3 install -r requirements.txt
+  - pip3 install pytest
+  - pytest .
+
+image: python:3.6
+test_e2e:
+  script:
+  - pip3 install -r requirements.txt
+  - pip3 install pytest
+  - pytest tests/e2etest_mwdblib.py

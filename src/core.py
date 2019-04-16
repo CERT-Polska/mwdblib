@@ -11,23 +11,50 @@ from .blob import MalwarecageBlob
 
 
 class Malwarecage(object):
-    def __init__(self, api=None):
-        self.api = api or MalwarecageAPI()
+    """
+    Main object used for communication with Malwarecage
+
+    :param api: Custom :class:`MalwarecageAPI` used to communicate with Malwarecage
+    :type api: :class:`MalwarecageAPI`, optional
+    :param api_key: API key used for authentication (omit if password-based authentication is used)
+    :type api_key: str, optional
+
+    Usage example:
+
+    .. code-block:: python
+
+       from mwdblib import Malwarecage
+
+       mwdb = Malwarecage()
+       mwdb.login("example", "<password>")
+
+       file = mwdb.query_file("3629344675705286607dd0f680c66c19f7e310a1")
+
+    """
+
+    def __init__(self, api=None, api_key=None):
+        self.api = api or MalwarecageAPI(api_key=api_key)
 
     def login(self, username, password):
         """
         Performs user authentication using provided username and password.
-        If you want to authenticate using API key - initialize Malwarecage object with MalwarecageAPI instance
+
+        .. warning::
+
+           Keep in mind that password-authenticated sessions are short lived, so password needs to be stored
+           in :class:`MalwarecageAPI` object. Ask Malwarecage instance administrator for an API key (or send e-mail to
+           info@cert.pl if you use mwdb.cert.pl)
+
+        .. versionadded:: 2.4.0
+           Malwarecage tries to reauthenticate on first Unauthorized exception
 
         :param username: User name
+        :type username: str
         :param password: Password
+        :type password: str
         :raises: requests.exceptions.HTTPError
         """
-        result = self.api.post("auth/login", json={
-            "login": username,
-            "password": password
-        }, noauth=True)
-        self.api.set_api_key(result["token"])
+        self.api.login(username, password)
 
     def _recent(self, endpoint, query=None):
         try:
@@ -48,10 +75,25 @@ class Malwarecage(object):
     def recent_objects(self):
         """
         Retrieves recently uploaded objects
-        If you already know type of object you are looking for - use specialized variants:
-        - recent_files
-        - recent_configs
-        - recent_blobs
+        If you already know type of object you are looking for, use specialized variants:
+
+        - :py:meth:`recent_files`
+        - :py:meth:`recent_configs`
+        - :py:meth:`recent_blobs`
+
+        Usage example:
+
+        .. code-block:: python
+
+            from mwdblib import Malwarecage
+            from itertools import islice
+
+            mwdb = Malwarecage()
+            mwdb.login("admin", "password123")
+
+            # recent_files is generator, do not execute list(recent_files)!
+            files = islice(mwdb.recent_files(), 25)
+            print([(f.name, f.tags) for f in files])
 
         :rtype: Iterator[:class:`MalwarecageObject`]
         :raises: requests.exceptions.HTTPError
@@ -85,63 +127,96 @@ class Malwarecage(object):
         """
         return self._recent("blob")
 
-    def query(self, hash):
+    def _query(self, object_type, hash, raise_not_found):
+        try:
+            result = self.api.get(object_type.URL_PATTERN.format(id=hash))
+            return object_type.create(self.api, result)
+        except requests.exceptions.HTTPError as e:
+            if not raise_not_found and e.response.status_code == requests.codes.not_found:
+                return None
+            else:
+                raise
+
+    def query(self, hash, raise_not_found=True):
         """
         Queries for object using provided hash.
-        If you already know type of object you are looking for - use specialized variants:
-        - query_file
-        - query_config
-        - query_blob
+        If you already know type of object you are looking for, use specialized variants:
+
+        - :py:meth:`query_file`
+        - :py:meth:`query_config`
+        - :py:meth:`query_blob`
+
+        .. versionadded:: 2.4.0
+           Added raise_not_found optional argument
 
         :param hash: Object hash (identifier, MD5, SHA-1, SHA-2)
-        :rtype: :class:`MalwarecageObject`
+        :type hash: str
+        :param raise_not_found: If True (default), method raises HTTPError when object is not found
+        :type raise_not_found: bool, optional
+        :rtype: :class:`MalwarecageObject` or None (if raise_not_found=False)
         :raises: requests.exceptions.HTTPError
         """
-        result = self.api.get("object/{}".format(hash))
-        return MalwarecageObject.create(self.api, result)
+        return self._query(MalwarecageObject, hash, raise_not_found)
 
-    def query_file(self, hash):
+    def query_file(self, hash, raise_not_found=True):
         """
         Queries for file using provided hash
 
         :param hash: Object hash (identifier, MD5, SHA-1, SHA-2)
-        :rtype: :class:`MalwarecageFile`
+        :type hash: str
+        :param raise_not_found: If True (default), method raises HTTPError when object is not found
+        :type raise_not_found: bool
+        :rtype: :class:`MalwarecageFile` or None (if raise_not_found=False)
         :raises: requests.exceptions.HTTPError
         """
-        result = self.api.get("file/{}".format(hash))
-        return MalwarecageFile(self.api, result)
+        return self._query(MalwarecageFile, hash, raise_not_found)
 
-    def query_config(self, hash):
+    def query_config(self, hash, raise_not_found=True):
         """
         Queries for configuration object using provided hash
 
-        :param hash: Object hash (identifier, MD5, SHA-1, SHA-2)
-        :rtype: :class:`MalwarecageConfig`
+        :param hash: Object hash (SHA-256 identifier)
+        :type hash: str
+        :param raise_not_found: If True (default), method raises HTTPError when object is not found
+        :type raise_not_found: bool
+        :rtype: :class:`MalwarecageConfig` or None (if raise_not_found=False)
         :raises: requests.exceptions.HTTPError
         """
-        result = self.api.get("config/{}".format(hash))
-        return MalwarecageConfig(self.api, result)
+        return self._query(MalwarecageConfig, hash, raise_not_found)
 
-    def query_blob(self, hash):
+    def query_blob(self, hash, raise_not_found=True):
         """
         Queries for blob object using provided hash
 
-        :param hash: Object hash (identifier, MD5, SHA-1, SHA-2)
-        :rtype: :class:`MalwarecageConfig`
+        :param hash: Object hash (SHA-256 identifier)
+        :type hash: str
+        :param raise_not_found: If True (default), method raises HTTPError when object is not found
+        :type raise_not_found: bool
+        :rtype: :class:`MalwarecageBlob` or None (if raise_not_found=False)
         :raises: requests.exceptions.HTTPError
         """
-        result = self.api.get("blob/{}".format(hash))
-        return MalwarecageBlob(self.api, result)
+        return self._query(MalwarecageBlob, hash, raise_not_found)
 
     def search(self, query):
         """
         Advanced search for objects using Lucene syntax.
-        If you already know type of object you are looking for - use specialized variants:
-        - search_files
-        - search_configs
-        - search_blobs
+        If you already know type of object you are looking for, use specialized variants:
+
+        - :py:meth:`search_files`
+        - :py:meth:`search_configs`
+        - :py:meth:`search_blobs`
+
+        Usage example:
+
+        .. code-block:: python
+
+            from mwdblib import Malwarecage
+
+            # Search for samples tagged as evil and with size less than 100kB
+            results = mwdb.search_files("tag:evil AND file.size:[0 TO 100000]")
 
         :param query: Search query
+        :type query: str
         :rtype: Iterator[:class:`MalwarecageObject`]
         :raises: requests.exceptions.HTTPError
         """
@@ -154,6 +229,7 @@ class Malwarecage(object):
         Advanced search for files using Lucene syntax.
 
         :param query: Search query
+        :type query: str
         :rtype: Iterator[:class:`MalwarecageFile`]
         :raises: requests.exceptions.HTTPError
         """
@@ -164,6 +240,7 @@ class Malwarecage(object):
         Advanced search for configuration objects using Lucene syntax.
 
         :param query: Search query
+        :type query: str
         :rtype: Iterator[:class:`MalwarecageConfig`]
         :raises: requests.exceptions.HTTPError
         """
@@ -174,10 +251,24 @@ class Malwarecage(object):
         Advanced search for blob objects using Lucene syntax.
 
         :param query: Search query
+        :type query: str
         :rtype: Iterator[:class:`MalwarecageBlob`]
         :raises: requests.exceptions.HTTPError
         """
         return self._recent("blob", query)
+
+    @staticmethod
+    def _convert_bytes(data):
+        if isinstance(data, dict):
+            return dict(map(Malwarecage._convert_bytes, data.items()))
+
+        if isinstance(data, bytes):
+            return data.decode('utf-8', 'replace')
+
+        if isinstance(data, (tuple, list)):
+            return list(map(Malwarecage._convert_bytes, data))
+
+        return data
 
     def _upload(self, type, parent=None, metakeys=None,
                 share_with=None, private=False, public=False,
@@ -193,9 +284,11 @@ class Malwarecage(object):
 
         if isinstance(metakeys, dict):
             metakeys = [{"key": key, "value": value}
-                        for key, value_list in metakeys.iteritems()
+                        for key, value_list in metakeys.items()
                         for value in (value_list if isinstance(value_list, list) else [value_list])]
 
+        if private and public:
+            raise ValueError("Sample can't be both private and public")
         if public:
             share_with = "public"
         if private:
@@ -204,45 +297,87 @@ class Malwarecage(object):
         result = self.api.post("{}/{}".format(type, parent), data={
             'metakeys': json.dumps({'metakeys': metakeys}),
             'upload_as': share_with or "*"
-        }, files=req_files, json=req_json)
+        }, files=req_files, json=self._convert_bytes(req_json))
         return result
 
     def upload_file(self, name, content, **kwargs):
         """
         Upload file object
 
-        :param name: Original file name
+        :param name: Original file name (see also :py:attr:`MalwarecageFile.file_name`)
+        :type name: str
         :param content: File contents
-        :param parent: (optional) Parent object or parent identifier
-        :param metakeys: (optional) Dictionary with metakeys.
-            If you want to set many values with the same key: use list
-        :param share_with: (optional) Group name you want to share object with
-        :param private: (optional) True if sample should be uploaded as private
-        :param public: (optional) True if sample should be visible for everyone
+        :type content: bytes
+        :param parent: Parent object or parent identifier
+        :type parent: :class:`MalwarecageObject` or str, optional
+        :param metakeys: Dictionary with metakeys.
+            If you want to set many values with the same key: use list as value
+        :type metakeys: dict, optional
+        :param share_with: Group name you want to share object with
+        :type share_with: str, optional
+        :param private: True if sample should be uploaded as private
+        :type private: bool, optional
+        :param public: True if sample should be visible for everyone
+        :type public: bool, optional
         :rtype: :class:`MalwarecageFile`
-        :raises: requests.exceptions.HTTPError
+        :raises: :class:`requests.exceptions.HTTPError`, :class:`ValueError`
+
+        Usage example:
+
+        .. code-block:: python
+
+           mwdb.upload_file(
+               "malware.exe",
+               open("malware.exe", "rb").read(),
+               parent="3629344675705286607dd0f680c66c19f7e310a1",
+               public=True)
         """
         result = self._upload("file", req_files={'file': (name, content)}, **kwargs)
         return MalwarecageFile(self.api, result)
 
-    def upload_config(self, family, cfg, **kwargs):
+    def upload_config(self, family, cfg, config_type="static", **kwargs):
         """
         Upload configuration object
 
-        :param family: Malware family name
-        :param cfg: Dict object with configuration
-        :param parent: (optional) Parent object or parent identifier
-        :param metakeys: (optional) Dictionary with metakeys.
-            If you want to set many values with the same key: use list
-        :param share_with: (optional) Group name you want to share object with
-        :param private: (optional) True if sample should be uploaded as private
-        :param public: (optional) True if sample should be visible for everyone
+        :param family: Malware family name (see also :py:attr:`MalwarecageConfig.family`)
+        :type family: str
+        :param cfg: Dict object with configuration (see also :py:attr:`MalwarecageConfig.cfg`)
+        :type cfg: dict
+        :param config_type: Configuration type (default: static, see also :py:attr:`MalwarecageConfig.type`)
+        :type config_type: str, optional
+        :param parent: Parent object or parent identifier
+        :type parent: :class:`MalwarecageObject` or str, optional
+        :param metakeys: Dictionary with metakeys.
+            If you want to set many values with the same key: use list as value
+        :type metakeys: dict, optional
+        :param share_with: Group name you want to share object with
+        :type share_with: str, optional
+        :param private: True if sample should be uploaded as private
+        :type private: bool, optional
+        :param public: True if sample should be visible for everyone
+        :type public: bool, optional
         :rtype: :class:`MalwarecageConfig`
-        :raises: requests.exceptions.HTTPError
+        :raises: :class:`requests.exceptions.HTTPError`, :class:`ValueError`
+
+        .. code-block:: python
+
+           mwdb.upload_config(
+               "evil",
+               {
+                   "botnet": "mal0123",
+                   "version": 2019,
+                   "urls": [
+                       "http://example.com",
+                       "http://example.com/2"
+                   ]
+               }
+               parent="3629344675705286607dd0f680c66c19f7e310a1",
+               public=True)
         """
         result = self._upload("config", req_json={
             "family": family,
-            "cfg": cfg
+            "cfg": cfg,
+            "config_type": config_type
         }, **kwargs)
         return MalwarecageConfig(self.api, result)
 
@@ -250,18 +385,25 @@ class Malwarecage(object):
         """
         Upload blob object
 
-        :param name: Blob name
-        :param type: Blob type
-        :param content: Blob content
-        :param cfg: Dict object with configuration
-        :param parent: (optional) Parent object or parent identifier
-        :param metakeys: (optional) Dictionary with metakeys.
-            If you want to set many values with the same key: use list
-        :param share_with: (optional) Group name you want to share object with
-        :param private: (optional) True if sample should be uploaded as private
-        :param public: (optional) True if sample should be visible for everyone
+        :param name: Blob name (see also :py:attr:`MalwarecageBlob.blob_name`)
+        :type name: str
+        :param type: Blob type (see also :py:attr:`MalwarecageBlob.blob_type`)
+        :type type: str
+        :param content: Blob content (see also :py:attr:`MalwarecageBlob.content`)
+        :type content: str
+        :param parent: Parent object or parent identifier
+        :type parent: :class:`MalwarecageObject` or str, optional
+        :param metakeys: Dictionary with metakeys.
+            If you want to set many values with the same key: use list as value
+        :type metakeys: dict, optional
+        :param share_with: Group name you want to share object with
+        :type share_with: str, optional
+        :param private: True if sample should be uploaded as private
+        :type private: bool, optional
+        :param public: True if sample should be visible for everyone
+        :type public: bool, optional
         :rtype: :class:`MalwarecageBlob`
-        :raises: requests.exceptions.HTTPError
+        :raises: :class:`requests.exceptions.HTTPError`, :class:`ValueError`
         """
         result = self._upload("blob", req_json={
             "blob_name": name,
