@@ -58,7 +58,7 @@ class MalwarecageObject(MalwarecageElement):
         from .config import MalwarecageConfig
         if "config" not in data:
             data = dict(data)
-            if "latest_config" in data:
+            if "latest_config" in data and data["latest_config"]:
                 data["config"] = MalwarecageConfig(self.api, data["latest_config"])
             elif "children" in data:
                 """
