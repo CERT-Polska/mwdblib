@@ -62,7 +62,7 @@ class Malwarecage(object):
                 params = {"page": page}
                 if query is not None:
                     params["query"] = query
-                result = self.api.get(endpoint, params={"page": page})
+                result = self.api.get(endpoint, params=params)
                 key = endpoint+"s"
                 if key not in result or len(result[key]) == 0:
                     return

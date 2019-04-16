@@ -6,7 +6,7 @@ except ImportError:
     from distutils.core import setup
 
 setup(name="mwdblib",
-      version="2.4.0.1",
+      version="2.4.0.2",
       description="malwaredb API bindings for Python",
       author="psrok1",
       package_dir={'mwdblib': 'src'},
