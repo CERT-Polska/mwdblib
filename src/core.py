@@ -1,3 +1,4 @@
+import getpass
 import itertools
 import json
 
@@ -8,6 +9,12 @@ from .object import MalwarecageObject
 from .file import MalwarecageFile
 from .config import MalwarecageConfig
 from .blob import MalwarecageBlob
+
+try:
+    import __builtin__
+    user_input = getattr(__builtin__, "raw_input")
+except ImportError:
+    user_input = input
 
 
 class Malwarecage(object):
@@ -35,7 +42,7 @@ class Malwarecage(object):
     def __init__(self, api=None, api_key=None):
         self.api = api or MalwarecageAPI(api_key=api_key)
 
-    def login(self, username, password):
+    def login(self, username=None, password=None):
         """
         Performs user authentication using provided username and password.
 
@@ -48,12 +55,21 @@ class Malwarecage(object):
         .. versionadded:: 2.4.0
            Malwarecage tries to reauthenticate on first Unauthorized exception
 
+        .. versionadded:: 2.5.0
+           username and password arguments are optional. If one of the credentials is not provided via arguments,
+           user will be asked for it.
+
         :param username: User name
         :type username: str
         :param password: Password
         :type password: str
         :raises: requests.exceptions.HTTPError
         """
+        if username is None:
+            # Py2 compatibility
+            username = user_input("Username: ")
+        if password is None:
+            password = getpass.getpass("Password: ")
         self.api.login(username, password)
 
     def _recent(self, endpoint, query=None):

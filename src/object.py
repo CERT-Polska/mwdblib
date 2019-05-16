@@ -207,10 +207,12 @@ class MalwarecageObject(MalwarecageElement):
         """
         Adds reference to child with current object as parent
 
-        :param child: Object
-        :type child: MalwarecageObject
+        :param child: Object or object identifier (sha256)
+        :type child: MalwarecageObject or str
         """
-        self.api.put("object/{parent}/child/{child}".format(parent=self.id, child=child.id))
+        if not isinstance(child, str):
+            child = child.id
+        self.api.put("object/{parent}/child/{child}".format(parent=self.id, child=child))
         if "children" in self.data:
             del self.data["children"]
 
