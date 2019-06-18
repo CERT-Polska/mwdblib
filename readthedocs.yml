@@ -13,5 +13,5 @@ sphinx:
 formats: all
 
 install:
-  - method: pip
+  - method: setuptools
     path: .
