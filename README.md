@@ -1,8 +1,10 @@
 # mwdblib
 
-mwdb.cert.pl API bindings for Python 2.x/3.x. Use it if you want to automate data uploading/fetching from mwdb.cert.pl or have some ipython-based CLI :)
+API bindings for mwdb.cert.pl service, supporting both Python 2.x/3.x versions. Use it if you want to automate data uploading/fetching from mwdb.cert.pl or have some ipython-based CLI.
 
-## Usage
+Complete docs can be found here: https://mwdblib.readthedocs.io/en/latest/
+
+## Usage examples
 
 Print names and tags of 25 recent files
 
