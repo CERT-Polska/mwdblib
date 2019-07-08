@@ -18,6 +18,10 @@ API_URL = "https://mwdb.cert.pl/api/"
 class MalwarecageAPI(object):
     def __init__(self, api_url=API_URL, api_key=None, verify_ssl=False):
         self.api_url = api_url
+        if not self.api_url.endswith("/"):
+            self.api_url += "/"
+            warnings.warn("MalwarecageAPI.api_url should end with trailing slash. Fix your configuration. "
+                          "Missing character was added to URL.")
         self.api_key = None
         self.session = requests.Session()
         self.set_api_key(api_key)
