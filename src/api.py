@@ -82,8 +82,8 @@ class MalwarecageAPI(object):
 
         # If there are both 'form data' and 'json' passed - we need to pack them into multipart/form-data
         if "data" in kwargs and "json" in kwargs:
-            files = kwargs.get("files", {})
-            files["json"] = (None, json.dumps(kwargs["json"]), "application/json")
+            kwargs["files"] = kwargs.get("files", {})
+            kwargs["files"]["json"] = (None, json.dumps(kwargs["json"]), "application/json")
             del kwargs["json"]
 
         def try_request():
@@ -115,6 +115,9 @@ class MalwarecageAPI(object):
                     retry_after = 60
                 else:
                     retry_after = int(e.response.headers["Retry-After"])
+                warnings.warn("Rate limit exceeded. Sleeping for a {} seconds.".format(
+                    retry_after
+                ))
                 time.sleep(retry_after)
                 return self.request(
                     method,
