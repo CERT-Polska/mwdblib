@@ -310,7 +310,7 @@ class Malwarecage(object):
         if private:
             share_with = self.api.logged_user()
 
-        result = self.api.post("{}/{}".format(type, parent), data={
+        result = self.api.put("{}/{}".format(type, parent), data={
             'metakeys': json.dumps({'metakeys': metakeys}),
             'upload_as': share_with or "*"
         }, files=req_files, json=self._convert_bytes(req_json))
