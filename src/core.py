@@ -58,6 +58,9 @@ class Malwarecage(object):
            username and password arguments are optional. If one of the credentials is not provided via arguments,
            user will be asked for it.
 
+        .. versionadded:: 2.6.0
+           API request will sleep for a dozen of seconds when rate limit has been exceeded.
+
         :param username: User name
         :type username: str
         :param password: Password
