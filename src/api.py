@@ -1,6 +1,7 @@
 import base64
 import json
 import warnings
+import time
 
 try:
     from urlparse import urljoin
@@ -16,18 +17,34 @@ API_URL = "https://mwdb.cert.pl/api/"
 
 
 class MalwarecageAPI(object):
-    def __init__(self, api_url=API_URL, api_key=None, verify_ssl=False):
+    def __init__(
+        self,
+        api_url=API_URL,
+        api_key=None,
+        verify_ssl=False,
+        obey_ratelimiter=True,
+    ):
+        """ API object used to talk with a malwarecage instance directly.
+
+        :param api_url: Malwarecage instance URL. Should end with a slash.
+        :param api_key: Optional API key.
+        :param verify_ssl: Should the api verify SSL certificate correctness?
+        :param obey_ratelimiter: If false, HTTP 429 errors will cause an
+        exception like all other error codes. If true (default), library will
+        transparently handle them by sleeping for a specified duration.
+        """
         self.api_url = api_url
         if not self.api_url.endswith("/"):
             self.api_url += "/"
-            warnings.warn("MalwarecageAPI.api_url should end with trailing slash. Fix your configuration. "
-                          "Missing character was added to URL.")
+            warnings.warn("MalwarecageAPI.api_url should end with a trailing slash. "
+                          "Fix your configuration. Missing character was added to the URL.")
         self.api_key = None
         self.session = requests.Session()
         self.set_api_key(api_key)
         self.username = None
         self.password = None
         self.verify_ssl = verify_ssl
+        self.obey_ratelimiter = obey_ratelimiter
 
     def set_api_key(self, api_key):
         self.api_key = api_key
@@ -77,18 +94,39 @@ class MalwarecageAPI(object):
         try:
             response = try_request()
         except requests.HTTPError as e:
-            # If not unauthorized: re-raise
-            if e.response.status_code != requests.codes.unauthorized:
+            if e.response.status_code == requests.codes.unauthorized:
+                # Handle HTTP 401 unauthorised
+                # Forget api_key
+                self.api_key = None
+                # If authenticated using api_key: re-raise
+                if self.username is None:
+                    raise
+                # Try to log in
+                self.login(self.username, self.password)
+                # Repeat failed request
+                response = try_request()
+            elif e.response.status_code == requests.codes.too_many_requests:
+                # Handle HTTP 429 too many requests (rate limit)
+                if not self.obey_ratelimiter:
+                    raise
+                if 'Retry-After' not in e.response.headers:
+                    # This should be exponential backoff, but we don't expect
+                    # to see mwdb instances without retry-after headers anyway
+                    retry_after = 60
+                else:
+                    retry_after = int(e.response.headers["Retry-After"])
+                time.sleep(retry_after)
+                return self.request(
+                    method,
+                    url,
+                    noauth=noauth,
+                    raw=raw,
+                    *args,
+                    **kwargs
+                )
+            else:
+                # otherwise, re-raise
                 raise
-            # Forget api_key
-            self.api_key = None
-            # If authenticated using api_key: re-raise
-            if self.username is None:
-                raise
-            # Try to log in
-            self.login(self.username, self.password)
-            # Repeat failed request
-            response = try_request()
 
         return response.json() if not raw else response.content
 
