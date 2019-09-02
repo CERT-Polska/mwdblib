@@ -1,5 +1,4 @@
 import getpass
-import itertools
 import json
 
 import requests
@@ -74,8 +73,9 @@ class Malwarecage(object):
 
     def _recent(self, endpoint, query=None):
         try:
-            for page in itertools.count(start=1):
-                params = {"page": page}
+            last_object = None
+            while True:
+                params = {"older_than": last_object.id} if last_object else {}
                 if query is not None:
                     params["query"] = query
                 result = self.api.get(endpoint, params=params)
@@ -83,7 +83,8 @@ class Malwarecage(object):
                 if key not in result or len(result[key]) == 0:
                     return
                 for obj in result[key]:
-                    yield MalwarecageObject.create(self.api, obj)
+                    last_object = MalwarecageObject.create(self.api, obj)
+                    yield last_object
         except requests.exceptions.HTTPError as e:
             if e.response.status_code >= 500:
                 raise e
