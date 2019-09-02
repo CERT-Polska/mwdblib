@@ -21,7 +21,7 @@ class MalwarecageAPI(object):
         self,
         api_url=API_URL,
         api_key=None,
-        verify_ssl=False,
+        verify_ssl=True,
         obey_ratelimiter=True,
     ):
         """ API object used to talk with a malwarecage instance directly.
