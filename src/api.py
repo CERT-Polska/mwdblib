@@ -39,8 +39,10 @@ class MalwarecageAPI(object):
             warnings.warn("MalwarecageAPI.api_url should end with a trailing slash. "
                           "Fix your configuration. Missing character was added to the URL.")
         self.api_key = None
+        self.logged_user = None
         self.session = requests.Session()
         self.set_api_key(api_key)
+
         self.username = None
         self.password = None
         self.verify_ssl = verify_ssl
@@ -48,7 +50,12 @@ class MalwarecageAPI(object):
 
     def set_api_key(self, api_key):
         self.api_key = api_key
-        self.session.headers.update({'Authorization': 'Bearer {}'.format(self.api_key)})
+        if self.api_key is not None:
+            try:
+                self.logged_user = json.loads(base64.b64decode(self.api_key.split(".")[1] + "=="))["login"]
+            except Exception:
+                raise RuntimeError("Invalid API key format.")
+            self.session.headers.update({'Authorization': 'Bearer {}'.format(self.api_key)})
 
     def login(self, username, password):
         warnings.warn("Password-authenticated sessions are short lived, so password needs to be stored "
@@ -61,11 +68,6 @@ class MalwarecageAPI(object):
         self.username = username
         self.password = password
         self.set_api_key(result["token"])
-
-    def logged_user(self):
-        if self.api_key is None:
-            return None
-        return json.loads(base64.b64decode(self.api_key.split(".")[1]+"=="))["login"]
 
     def request(self, method, url, noauth=False, raw=False, *args, **kwargs):
         # Check if authenticated yet
