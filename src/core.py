@@ -89,7 +89,7 @@ class Malwarecage(object):
                     last_object = MalwarecageObject.create(self.api, obj)
                     yield last_object
         except requests.exceptions.HTTPError as e:
-            if e.response.status_code >= 500:
+            if e.response.status_code != 404:
                 raise e
 
     def recent_objects(self):
