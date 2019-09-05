@@ -54,7 +54,8 @@ class MalwarecageAPI(object):
             try:
                 self.logged_user = json.loads(base64.b64decode(self.api_key.split(".")[1] + "=="))["login"]
             except Exception:
-                raise RuntimeError("Invalid API key format.")
+                raise RuntimeError("Invalid API key format. Verify whether actual token is provided "
+                                   "instead of its UUID.")
             self.session.headers.update({'Authorization': 'Bearer {}'.format(self.api_key)})
 
     def login(self, username, password):
@@ -68,6 +69,9 @@ class MalwarecageAPI(object):
         self.username = username
         self.password = password
         self.set_api_key(result["token"])
+
+    def logout(self):
+        self.api_key = None
 
     def request(self, method, url, noauth=False, raw=False, *args, **kwargs):
         # Check if authenticated yet

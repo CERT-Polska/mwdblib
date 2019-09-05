@@ -1,5 +1,6 @@
 import getpass
 import json
+import warnings
 
 import requests
 
@@ -24,6 +25,9 @@ class Malwarecage(object):
     :type api: :class:`MalwarecageAPI`, optional
     :param api_key: API key used for authentication (omit if password-based authentication is used)
     :type api_key: str, optional
+
+    .. versionadded:: 2.6.0
+       API request will sleep for a dozen of seconds when rate limit has been exceeded.
 
     Usage example:
 
@@ -59,7 +63,7 @@ class Malwarecage(object):
            user will be asked for it.
 
         .. versionadded:: 2.6.0
-           API request will sleep for a dozen of seconds when rate limit has been exceeded.
+           :py:meth:`Malwarecage.login` will warn if login is called after setting up API key
 
         :param username: User name
         :type username: str
@@ -67,12 +71,21 @@ class Malwarecage(object):
         :type password: str
         :raises: requests.exceptions.HTTPError
         """
+        if self.api.api_key is not None:
+            warnings.warn("login() will reset the previously set API key. If you really want to reauthenticate, "
+                          "call logout() before to suppress this warning.")
         if username is None:
             # Py2 compatibility
             username = user_input("Username: ")
         if password is None:
             password = getpass.getpass("Password: ")
         self.api.login(username, password)
+
+    def logout(self):
+        """
+        Performs session logout and removes previously set API key.
+        """
+        self.api.logout()
 
     def _recent(self, endpoint, query=None):
         try:
