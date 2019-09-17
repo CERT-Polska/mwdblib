@@ -13,3 +13,5 @@ __all__ = [
     'MalwarecageConfig',
     'MalwarecageBlob',
 ]
+
+__version__ = "3.0.0"

@@ -5,8 +5,10 @@ try:
 except ImportError:
     from distutils.core import setup
 
+from src import __version__
+
 setup(name="mwdblib",
-      version="2.6.0",
+      version=__version__,
       description="malwaredb API bindings for Python",
       author="psrok1",
       package_dir={'mwdblib': 'src'},

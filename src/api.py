@@ -43,6 +43,10 @@ class MalwarecageAPI(object):
         self.api_key = None
         self.logged_user = None
         self.session = requests.Session()
+
+        from . import __version__
+        self.session.headers['User-Agent'] = "mwdblib/{} ".format(__version__) + self.session.headers['User-Agent']
+
         self.set_api_key(api_key)
 
         self.username = None
