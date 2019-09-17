@@ -2,9 +2,8 @@ import getpass
 import json
 import warnings
 
-import requests
-
 from .api import MalwarecageAPI
+from .exc import ObjectNotFoundError, ValidationError
 from .object import MalwarecageObject
 from .file import MalwarecageFile
 from .config import MalwarecageConfig
@@ -101,9 +100,8 @@ class Malwarecage(object):
                 for obj in result[key]:
                     last_object = MalwarecageObject.create(self.api, obj)
                     yield last_object
-        except requests.exceptions.HTTPError as e:
-            if e.response.status_code != 404:
-                raise e
+        except ObjectNotFoundError:
+            return
 
     def recent_objects(self):
         """
@@ -164,8 +162,8 @@ class Malwarecage(object):
         try:
             result = self.api.get(object_type.URL_PATTERN.format(id=hash))
             return object_type.create(self.api, result)
-        except requests.exceptions.HTTPError as e:
-            if not raise_not_found and e.response.status_code == requests.codes.not_found:
+        except ObjectNotFoundError:
+            if not raise_not_found:
                 return None
             else:
                 raise
@@ -321,7 +319,7 @@ class Malwarecage(object):
                         for value in (value_list if isinstance(value_list, list) else [value_list])]
 
         if private and public:
-            raise ValueError("Sample can't be both private and public")
+            raise ValidationError("Sample can't be both private and public")
         if public:
             share_with = "public"
         if private:
