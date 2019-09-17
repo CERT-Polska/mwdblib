@@ -13,6 +13,7 @@ Welcome to mwdblib's documentation!
    mwdblib
    mwdbtypes
    mwdbsecondary
+   mwdbexc
 
 
 .. toctree::
