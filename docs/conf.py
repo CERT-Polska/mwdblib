@@ -12,8 +12,10 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('..'))
 
+from src import __version__  # noqa: E402
 
 # -- Project information -----------------------------------------------------
 
@@ -22,7 +24,7 @@ copyright = '2019, CERT Polska'
 author = 'CERT Polska'
 
 # The full version, including alpha/beta/rc tags
-release = '2.6.0'
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
