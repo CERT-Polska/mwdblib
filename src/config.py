@@ -3,6 +3,7 @@ from .object import MalwarecageObject, lazy_property
 
 class MalwarecageConfig(MalwarecageObject):
     URL_PATTERN = "config/{id}"
+    TYPE = "static_config"
 
     @staticmethod
     def create(api, data):
@@ -46,6 +47,20 @@ class MalwarecageConfig(MalwarecageObject):
         (in-blob keys are not mapped to :class:`MalwarecageBlob` objects)
         """
         return self.data.get("cfg")
+
+    @property
+    def content(self):
+        """
+        Returns raw dict object as JSON bytes
+
+        :rtype: bytes
+        """
+        import json
+        content = json.dumps(self.config_dict, indent=4)
+        # Py2/Py3 compatibility
+        if not isinstance(content, bytes):
+            content = content.encode("utf-8")
+        return content
 
     @property
     def config(self):

@@ -5,6 +5,11 @@ from .object import MalwarecageObject, lazy_property
 
 class MalwarecageFile(MalwarecageObject):
     URL_PATTERN = "file/{id}"
+    TYPE = "file"
+
+    def __init__(self, *args, **kwargs):
+        self.preloaded_content = None
+        super(MalwarecageFile, self).__init__(*args, **kwargs)
 
     @staticmethod
     def create(api, data):
@@ -71,6 +76,15 @@ class MalwarecageFile(MalwarecageObject):
         Alias for :py:attr:`file_type` property
         """
         return self.file_type
+
+    @property
+    def content(self):
+        """
+        Returns file contents, calling :py:meth:`MalwarecageFile.download` if contents were not loaded yet
+        """
+        if self.preloaded_content is None:
+            self.preloaded_content = self.download()
+        return self.preloaded_content
 
     def download(self):
         """

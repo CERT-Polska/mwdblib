@@ -75,15 +75,21 @@ class MalwarecageObject(MalwarecageElement):
         from .config import MalwarecageConfig
         from .blob import MalwarecageBlob
         type = data["type"]
-        data = {k: v for k, v in data.items() if k != "type"}
-        if type == "file":
+        if type == MalwarecageFile.TYPE:
             return MalwarecageFile(api, data)
-        elif type == "static_config":
+        elif type == MalwarecageConfig.TYPE:
             return MalwarecageConfig(api, data)
-        elif type == "text_blob":
+        elif type == MalwarecageBlob.TYPE:
             return MalwarecageBlob(api, data)
         else:
             return None
+
+    @property
+    def object_type(self):
+        """
+        Object type ('file', 'static_config' or 'text_blob')
+        """
+        return self.data["type"]
 
     @property
     def sha256(self):
@@ -203,6 +209,18 @@ class MalwarecageObject(MalwarecageElement):
             raise PropertyUnloaded()
         return self.data["config"]
 
+    @property
+    def content(self):
+        """
+        Returns stringified contents of object
+
+        .. versionadded:: 3.0.0
+           Added :py:attr:`MalwarecageObject.content` property
+
+        :rtype: bytes
+        """
+        raise NotImplementedError()
+
     def add_child(self, child):
         """
         Adds reference to child with current object as parent
@@ -268,6 +286,22 @@ class MalwarecageObject(MalwarecageElement):
             "key": key,
             "value": value
         })
+
+    def share_with(self, group):
+        """
+        Share object with specified group
+
+        .. versionadded:: 3.0.0
+           Added :py:meth:`MalwarecageObject.share_with` method
+
+        :param group: Group name
+        :type group: str
+        """
+        self.api.put("object/{id}/share".format(**self.data), json={
+            "group": group
+        })
+        if "shares" in self.data:
+            del self.data["shares"]
 
     def flush(self):
         """
