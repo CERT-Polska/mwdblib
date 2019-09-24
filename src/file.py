@@ -1,5 +1,3 @@
-import warnings
-
 from .object import MalwarecageObject, lazy_property
 
 
