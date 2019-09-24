@@ -182,6 +182,9 @@ class Malwarecage(object):
         .. versionadded:: 2.4.0
            Added raise_not_found optional argument
 
+        .. versionchanged:: 3.0.0
+           Fallback to :py:meth:`query_file` if other hash than SHA256 was provided
+
         :param hash: Object hash (identifier, MD5, SHA-1, SHA-2)
         :type hash: str
         :param raise_not_found: If True (default), method raises HTTPError when object is not found
@@ -189,6 +192,9 @@ class Malwarecage(object):
         :rtype: :class:`MalwarecageObject` or None (if raise_not_found=False)
         :raises: requests.exceptions.HTTPError
         """
+        if len(hash) != 64:
+            # If different hash than SHA256 was provided
+            return self.query_file(hash, raise_not_found=raise_not_found)
         return self._query(MalwarecageObject, hash, raise_not_found)
 
     def query_file(self, hash, raise_not_found=True):
@@ -325,7 +331,7 @@ class Malwarecage(object):
         if public:
             share_with = "public"
         if private:
-            share_with = self.api.logged_user()
+            share_with = self.api.logged_user
 
         result = self.api.put("{}/{}".format(type, parent), data={
             'metakeys': json.dumps({'metakeys': metakeys}),
