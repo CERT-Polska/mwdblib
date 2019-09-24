@@ -106,11 +106,3 @@ class MalwarecageFile(MalwarecageObject):
         """
         token = self.api.post("request/sample/{id}".format(**self.data))["url"].split("/")[-1]
         return self.api.get("download/{}".format(token), raw=True)
-
-    def download_content(self):
-        """
-        .. deprecated:: 2.3.0
-           Use :py:meth:`download` instead.
-        """
-        warnings.warn("download_content() is deprecated. Use download() method.", DeprecationWarning)
-        return self.download()
