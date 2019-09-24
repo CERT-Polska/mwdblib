@@ -3,6 +3,7 @@ from .object import MalwarecageObject, lazy_property
 
 class MalwarecageBlob(MalwarecageObject):
     URL_PATTERN = "blob/{id}"
+    TYPE = "text_blob"
 
     @staticmethod
     def create(api, data):
@@ -54,8 +55,14 @@ class MalwarecageBlob(MalwarecageObject):
     def content(self):
         """
         Contains blob content
+
+        .. versionchanged:: 3.0.0
+           Returned type is guaranteed to be utf8-encoded bytes
         """
-        return self.data.get("content")
+        content = self.data.get("content")
+        if content is not None and not isinstance(content, bytes):
+            content = content.encode("utf-8")
+        return content
 
     @lazy_property()
     def last_seen(self):

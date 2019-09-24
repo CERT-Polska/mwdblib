@@ -44,7 +44,7 @@ class Malwarecage(object):
     def __init__(self, api=None, api_key=None):
         self.api = api or MalwarecageAPI(api_key=api_key)
 
-    def login(self, username=None, password=None):
+    def login(self, username=None, password=None, warn=True):
         """
         Performs user authentication using provided username and password.
 
@@ -68,6 +68,8 @@ class Malwarecage(object):
         :type username: str
         :param password: Password
         :type password: str
+        :param warn: Show warning about password-authenticated sessions
+        :type warn: bool (default: True)
         :raises: requests.exceptions.HTTPError
         """
         if self.api.api_key is not None:
@@ -78,7 +80,7 @@ class Malwarecage(object):
             username = user_input("Username: ")
         if password is None:
             password = getpass.getpass("Password: ")
-        self.api.login(username, password)
+        self.api.login(username, password, warn=warn)
 
     def logout(self):
         """

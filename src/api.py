@@ -64,10 +64,11 @@ class MalwarecageAPI(object):
                                               "instead of its UUID.")
             self.session.headers.update({'Authorization': 'Bearer {}'.format(self.api_key)})
 
-    def login(self, username, password):
-        warnings.warn("Password-authenticated sessions are short lived, so password needs to be stored "
-                      "in MalwarecageAPI object. Ask Malwarecage instance administrator for an API key "
-                      "(send e-mail to info@cert.pl if you use mwdb.cert.pl)")
+    def login(self, username, password, warn=True):
+        if warn:
+            warnings.warn("Password-authenticated sessions are short lived, so password needs to be stored "
+                          "in MalwarecageAPI object. Ask Malwarecage instance administrator for an API key "
+                          "(send e-mail to info@cert.pl if you use mwdb.cert.pl)")
         result = self.post("auth/login", json={
             "login": username,
             "password": password

@@ -7,8 +7,16 @@ Welcome to mwdblib's documentation!
 ===================================
 
 .. toctree::
+   :maxdepth: 3
+   :caption: Basic concepts
+
+   datamodel
+   sharingmodel
+   cmdline
+
+.. toctree::
    :maxdepth: 2
-   :caption: API:
+   :caption: API documentation
 
    mwdblib
    mwdbtypes
@@ -18,7 +26,7 @@ Welcome to mwdblib's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Usage examples:
+   :caption: Usage examples
 
    getexample
 
