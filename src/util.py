@@ -12,4 +12,4 @@ def config_dhash(obj):
             [[o, config_dhash(obj[o])] for o in sorted(obj.keys())]
         )
     else:
-        return hashlib.sha256(str(obj).encode("utf-8")).hexdigest()
+        return hashlib.sha256(bytes(str(obj), "utf-8")).hexdigest()
