@@ -8,7 +8,7 @@ def convert_to_utf8(obj):
     if sys.version_info[0] == 3:
         obj = bytes(obj, "utf-8")
     else:
-        obj = u''.join(map(unichr, map(ord, obj))).encode("utf-8")
+        obj = u''.join(map(unichr, map(ord, obj))).encode("utf-8")  # noqa: F821 in Py3 context
     return obj
 
 
