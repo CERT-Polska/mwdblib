@@ -5,10 +5,17 @@ test_style:
   - flake8 . --exclude=venv --max-line-length 120  # imo 120 is way too much
 
 image: python:3.6
-test_code:
+test_code_py3:
   script:
   - pip3 install -r requirements.txt
   - pip3 install pytest
+  - pytest .
+
+image: python:2.7
+test_code_py2:
+  script:
+  - pip install -r requirements.txt
+  - pip install pytest
   - pytest .
 
 image: python:3.6
