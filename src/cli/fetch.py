@@ -1,4 +1,5 @@
 import click
+import os
 
 from .authenticator import pass_mwdb
 from .main import main
@@ -20,9 +21,13 @@ def fetch_command(mwdb, hash, output, keep_name):
     """
     object = mwdb.query(hash)
     if output is None:
+        output_path = None
         if isinstance(object, MalwarecageFile) and keep_name:
-            output_path = object.name
-        else:
+            if object.name:
+                output_path = os.path.basename(object.name)
+            else:
+                click.echo("Warning: Object doesn't have original name, used SHA256", err=True)
+        if not output_path:
             output_path = hash
         with open(output_path, "wb") as f:
             f.write(object.content)
