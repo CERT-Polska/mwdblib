@@ -1,4 +1,5 @@
 import hashlib
+import sys
 
 
 def config_dhash(obj):
@@ -12,4 +13,7 @@ def config_dhash(obj):
             [[o, config_dhash(obj[o])] for o in sorted(obj.keys())]
         )
     else:
-        return hashlib.sha256(bytes(str(obj), "utf-8")).hexdigest()
+        obj = str(obj)
+        if sys.version_info[0] == 3:
+            obj = bytes(obj, "utf-8")
+        return hashlib.sha256(obj).hexdigest()
