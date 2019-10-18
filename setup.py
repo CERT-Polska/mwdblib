@@ -5,10 +5,16 @@ try:
 except ImportError:
     from distutils.core import setup
 
-from src import __version__
+"""
+We can't just import __version__ without installed dependencies
+"""
+
+version_info = {}
+with open("src/__version__.py") as f:
+    exec(f.read(), version_info)
 
 setup(name="mwdblib",
-      version=__version__,
+      version=version_info["__version__"],
       description="Malwarecage API bindings for Python",
       author="psrok1",
       package_dir={'mwdblib': 'src', 'mwdblib.cli': 'src/cli', 'mwdblib.cli.formatters': 'src/cli/formatters'},
