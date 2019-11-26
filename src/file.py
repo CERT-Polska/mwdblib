@@ -89,7 +89,7 @@ class MalwarecageFile(MalwarecageObject):
         Downloads file contents
 
         :return: File contents
-        :rtype: str
+        :rtype: bytes
 
         Example - download first file with size less than 1000 bytes and VBS extension
 
