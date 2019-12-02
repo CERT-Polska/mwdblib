@@ -3,7 +3,8 @@ import json
 import warnings
 import time
 
-from .exc import InvalidCredentialsError, NotAuthenticatedError, LimitExceededError, map_http_error
+from .exc import InvalidCredentialsError, NotAuthenticatedError, LimitExceededError, \
+                 BadResponseError, map_http_error
 
 try:
     from urlparse import urljoin
@@ -135,7 +136,13 @@ class MalwarecageAPI(object):
                 warnings.warn("Rate limit exceeded. Sleeping for a {} seconds.".format(retry_after))
                 time.sleep(retry_after)
                 # Retry failed request...
-        return response.json() if not raw else response.content
+        try:
+            return response.json() if not raw else response.content
+        except ValueError:
+            raise BadResponseError(
+                "Can't decode JSON response from server. "
+                "Probably MalwarecageAPI.api_url points to the Malwarecage web app instead of Malwarecage REST API."
+            )
 
     def get(self, *args, **kwargs):
         return self.request("get", *args, **kwargs)

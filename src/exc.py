@@ -59,6 +59,14 @@ class LimitExceededError(MalwarecageError):
     pass
 
 
+class BadResponseError(MalwarecageError):
+    """
+    Can't decode JSON response from server. Probably MalwarecageAPI.api_url points to the Malwarecage web app
+    instead of Malwarecage REST API.
+    """
+    pass
+
+
 class InternalError(MalwarecageError):
     """
     Internal error. Something really bad occurred on the server side.
