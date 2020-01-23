@@ -34,4 +34,7 @@ Exception objects
    :members:
 .. autoclass:: mwdblib.exc.TypeConflictError
    :members:
-
+.. autoclass:: mwdblib.exc.BadResponseError
+   :members:
+.. autoclass:: mwdblib.exc.GatewayError
+   :members:

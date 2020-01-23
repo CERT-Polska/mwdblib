@@ -5,3 +5,6 @@ Malwarecage core interface
 
 .. autoclass:: Malwarecage
     :members:
+
+.. autoclass:: MalwarecageAPI
+    :members:
