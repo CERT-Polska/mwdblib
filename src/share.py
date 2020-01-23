@@ -1,5 +1,3 @@
-import re
-
 from .object import MalwarecageElement, MalwarecageObject
 
 
@@ -7,17 +5,10 @@ class MalwarecageShareReason(object):
     """
     Represents the reason why object was shared with specified group
     """
-    def __init__(self, api, access_reason):
+    def __init__(self, api, share_data):
         self.api = api
-        self._reason = access_reason
-        self._data = {}
-        reason_match = re.match(r"^([A-Za-z]+) [a-z_]+:([0-9A-Za-z]+) by user:([0-9A-Za-z_\-]+)$", access_reason)
-        if reason_match:
-            self._data = {
-                "why": reason_match.group(1),
-                "what": reason_match.group(2),
-                "who": reason_match.group(3)
-            }
+        self._data = share_data
+        self._related_object = None
 
     @property
     def what(self):
@@ -26,24 +17,21 @@ class MalwarecageShareReason(object):
 
         :rtype: :class:`mwdblib.MalwarecageObject` or None
         """
-        _what = self._data.get("what")
-        if isinstance(_what, str):
-            result = self.api.get("object/{}".format(_what))
-            self._data["what"] = MalwarecageObject.create(self.api, result)
-            return self._data["what"]
-        else:
-            return _what
+        if self._related_object is None:
+            self._related_object = MalwarecageObject.create(self.api, {
+                "id": self._data["related_object_dhash"],
+                "type": self._data["related_object_type"]
+            })
+        return self._related_object
 
     @property
     def why(self):
         """
         Returns why it was shared
 
-        :return: One of actions: 'queried', 'shared', 'added'
+        :return: One of actions: 'queried', 'shared', 'added', 'migrated'
         """
-        if "why" not in self._data:
-            return None
-        return self._data["why"].lower()
+        return self._data["reason_type"]
 
     @property
     def who(self):
@@ -52,15 +40,16 @@ class MalwarecageShareReason(object):
 
         :return: User login
         """
-        if "who" not in self._data:
-            return None
-        return self._data["who"]
+        return self._data["related_user_login"]
 
     def __str__(self):
         """
-        Returns str with unparsed reason string (useful for custom reason entries)
+        Returns str with unparsed reason string
         """
-        return self._reason
+        return "{} {}:{} by {}".format(self._data["reason_type"],
+                                       self._data["related_object_type"],
+                                       self._data["related_object_dhash"],
+                                       self._data["related_user_login"])
 
 
 class MalwarecageShare(MalwarecageElement):
@@ -99,4 +88,4 @@ class MalwarecageShare(MalwarecageElement):
 
         :rtype: :class:`MalwarecageShareReason`
         """
-        return MalwarecageShareReason(self.api, self.data["access_reason"])
+        return MalwarecageShareReason(self.api, self.data)
