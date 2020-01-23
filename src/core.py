@@ -1,5 +1,7 @@
 import getpass
 import json
+import itertools
+import time
 import warnings
 
 from .api import MalwarecageAPI
@@ -92,19 +94,21 @@ class Malwarecage(object):
         """
         self.api.logout()
 
-    def _recent(self, endpoint, query=None):
+    def _recent(self, object_type, query=None):
         try:
             last_object = None
             while True:
                 params = {"older_than": last_object.id} if last_object else {}
                 if query is not None:
                     params["query"] = query
+                # 'object', 'file', 'config' or 'blob'?
+                endpoint = object_type.URL_PATTERN.split("/")[0]
                 result = self.api.get(endpoint, params=params)
                 key = endpoint+"s"
                 if key not in result or len(result[key]) == 0:
                     return
                 for obj in result[key]:
-                    last_object = MalwarecageObject.create(self.api, obj)
+                    last_object = object_type.create(self.api, obj)
                     yield last_object
         except ObjectNotFoundError:
             return
@@ -135,7 +139,7 @@ class Malwarecage(object):
         :rtype: Iterator[:class:`MalwarecageObject`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent("object")
+        return self._recent(MalwarecageObject)
 
     def recent_files(self):
         """
@@ -144,7 +148,7 @@ class Malwarecage(object):
         :rtype: Iterator[:class:`MalwarecageFile`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent("file")
+        return self._recent(MalwarecageFile)
 
     def recent_configs(self):
         """
@@ -153,7 +157,7 @@ class Malwarecage(object):
         :rtype: Iterator[:class:`MalwarecageConfig`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent("config")
+        return self._recent(MalwarecageConfig)
 
     def recent_blobs(self):
         """
@@ -162,7 +166,143 @@ class Malwarecage(object):
         :rtype: Iterator[:class:`MalwarecageBlob`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent("blob")
+        return self._recent(MalwarecageBlob)
+
+    def _listen(self, last_object, object_type, blocking=True, interval=15):
+        if last_object is None:
+            last_object = next(self._recent(object_type))
+            # If there are no elements (even first element): just get new samples from now on
+            if last_object is not None:
+                last_id = last_object.id
+        elif isinstance(last_object, MalwarecageObject):
+            # If we are requesting for typed objects, we should additionally check the object type
+            if object_type is not MalwarecageObject and not isinstance(last_object, object_type):
+                raise TypeError("latest_object type must be 'str' or '{}'".format(object_type.__name__))
+            # If object instance provided: get ID from instance
+            last_id = last_object.id
+        else:
+            # If not: first check whether object exists in repository
+            last_id = self._query(object_type, last_object, raise_not_found=True).id
+
+        while True:
+            objects = list(itertools.takewhile(lambda el: el.id != last_id,
+                                               self._recent(object_type)))
+            # Return fetched objects in reversed order (from oldest to latest)
+            for obj in objects[::-1]:
+                last_id = obj.id
+                yield obj
+            if blocking:
+                time.sleep(interval)
+            else:
+                break
+
+    def listen_for_objects(self, last_object=None, **kwargs):
+        """
+        Listens for recent objects and yields newly added.
+
+        In blocking mode (default) if last_object is provided: the method fetches the latest objects until
+        the provided object is reached and yields new objects from the oldest one. Otherwise, the method periodically
+        asks for recent objects until a new object appears. The default request interval is 15 seconds.
+
+        In a non-blocking mode: a generator stops if there are no more objects to fetch.
+
+        last_object argument accepts both identifier and MalwarecageObject instance. If the object identifier is
+        provided: method firstly checks whether the object exists in repository and has the correct type.
+
+        If you already know type of object you are looking for, use specialized variants:
+
+        - :py:meth:`listen_for_files`
+        - :py:meth:`listen_for_configs`
+        - :py:meth:`listen_for_blobs`
+
+        Using this method you need to
+
+        .. warning::
+            Make sure that last_object is valid in Malwarecage instance. If you provide MalwarecageObject that doesn't
+            exist, mwdblib will iterate over all objects and you can quickly hit your rate limit. Library is trying to
+            protect you from that as much as possible by checking type and object existence, but it's still possible to
+            do something unusual.
+
+        .. versionadded:: 3.2.0
+            Added listen_for_* methods
+
+        :param last_object: MalwarecageObject instance or object hash
+        :type last_object: MalwarecageObject or str
+        :param blocking: Enable blocking mode (default)
+        :type blocking: bool, optional
+        :param interval: Interval for periodic queries in blocking mode (default is 15 seconds)
+        :type interval: int, optional
+        :rtype: Iterator[:class:`MalwarecageObject`]
+        """
+        return self._listen(last_object,
+                            object_type=MalwarecageObject,
+                            **kwargs)
+
+    def listen_for_files(self, last_object=None, **kwargs):
+        """
+        Listens for recent files and yields newly added.
+
+        .. seealso::
+            More details can be found here: :meth:`listen_for_objects`
+
+        .. versionadded:: 3.2.0
+            Added listen_for_* methods
+
+        :param last_object: MalwarecageFile instance or object hash
+        :type last_object: MalwarecageFile or str
+        :param blocking: Enable blocking mode (default)
+        :type blocking: bool, optional
+        :param interval: Interval for periodic queries in blocking mode (default is 15 seconds)
+        :type interval: int, optional
+        :rtype: Iterator[:class:`MalwarecageFile`]
+        """
+        return self._listen(last_object,
+                            object_type=MalwarecageFile,
+                            **kwargs)
+
+    def listen_for_configs(self, last_object=None, **kwargs):
+        """
+        Listens for recent configs and yields newly added.
+
+        .. seealso::
+            More details can be found here: :meth:`listen_for_objects`
+
+        .. versionadded:: 3.2.0
+            Added listen_for_* methods
+
+        :param last_object: MalwarecageConfig instance or object hash
+        :type last_object: MalwarecageConfig or str
+        :param blocking: Enable blocking mode (default)
+        :type blocking: bool, optional
+        :param interval: Interval for periodic queries in blocking mode (default is 15 seconds)
+        :type interval: int, optional
+        :rtype: Iterator[:class:`MalwarecageConfig`]
+        """
+        return self._listen(last_object,
+                            object_type=MalwarecageConfig,
+                            **kwargs)
+
+    def listen_for_blobs(self, last_object=None, **kwargs):
+        """
+        Listens for recent blobs and yields newly added.
+
+        .. seealso::
+            More details can be found here: :meth:`listen_for_objects`
+
+        .. versionadded:: 3.2.0
+            Added listen_for_* methods
+
+        :param last_object: MalwarecageBlob instance or object hash
+        :type last_object: MalwarecageBlob or str
+        :param blocking: Enable blocking mode (default)
+        :type blocking: bool, optional
+        :param interval: Interval for periodic queries in blocking mode (default is 15 seconds)
+        :type interval: int, optional
+        :rtype: Iterator[:class:`MalwarecageBlob`]
+        """
+        return self._listen(last_object,
+                            object_type=MalwarecageBlob,
+                            **kwargs)
 
     def _query(self, object_type, hash, raise_not_found):
         try:
