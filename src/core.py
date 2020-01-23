@@ -28,6 +28,10 @@ class Malwarecage(object):
     .. versionadded:: 2.6.0
        API request will sleep for a dozen of seconds when rate limit has been exceeded.
 
+    .. versionadded:: 3.2.0
+       You can enable :attr:`retry_on_downtime` to automatically retry
+       requests in case of HTTP 502/504 or ConnectionError.
+
     Usage example:
 
     .. code-block:: python
@@ -41,8 +45,8 @@ class Malwarecage(object):
 
     """
 
-    def __init__(self, api=None, api_key=None):
-        self.api = api or MalwarecageAPI(api_key=api_key)
+    def __init__(self, api=None, **api_options):
+        self.api = api or MalwarecageAPI(**api_options)
 
     def login(self, username=None, password=None, warn=True):
         """
