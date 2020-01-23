@@ -4,7 +4,7 @@ import warnings
 import time
 
 from .exc import InvalidCredentialsError, NotAuthenticatedError, LimitExceededError, \
-                 BadResponseError, map_http_error
+                 BadResponseError, GatewayError, map_http_error
 
 try:
     from urlparse import urljoin
@@ -13,6 +13,7 @@ except ImportError:
 
 import requests
 
+from requests.exceptions import ConnectionError
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -25,7 +26,11 @@ class MalwarecageAPI(object):
         api_url=API_URL,
         api_key=None,
         verify_ssl=True,
-        obey_ratelimiter=True
+        obey_ratelimiter=True,
+        retry_on_downtime=False,
+        max_downtime_retries=5,
+        downtime_timeout=10,
+        retry_idempotent=True
     ):
         """ API object used to talk with a malwarecage instance directly.
 
@@ -35,6 +40,14 @@ class MalwarecageAPI(object):
         :param obey_ratelimiter: If false, HTTP 429 errors will cause an
         exception like all other error codes. If true (default), library will
         transparently handle them by sleeping for a specified duration.
+        :param retry_on_downtime: If true, requests will be automatically
+        retried after 10 seconds on HTTP 502/504 and ConnectionError.
+        :param max_downtime_retries: Number of retries caused by temporary downtime
+        :param downtime_timeout: How long we need to wait between retries (in seconds)
+        :param retry_idempotent: Retry idempotent POST requests (default). The only thing
+        that is really non-idempotent in current API is :meth:`MalwarecageObject.add_comment`,
+        so it's not a big deal. You can turn it off if possible doubled comments
+        are problematic in your Malwarecage instance.
         """
         self.api_url = api_url
         if not self.api_url.endswith("/"):
@@ -54,6 +67,10 @@ class MalwarecageAPI(object):
         self.password = None
         self.verify_ssl = verify_ssl
         self.obey_ratelimiter = obey_ratelimiter
+        self.retry_on_downtime = retry_on_downtime
+        self.max_downtime_retries = max_downtime_retries
+        self.downtime_timeout = downtime_timeout
+        self.retry_idempotent = retry_idempotent
 
     def set_api_key(self, api_key):
         self.api_key = api_key
@@ -111,6 +128,8 @@ class MalwarecageAPI(object):
             kwargs["files"]["json"] = (None, json.dumps(kwargs["json"]), "application/json")
             del kwargs["json"]
 
+        downtime_retries = self.max_downtime_retries
+
         while True:
             try:
                 response = self.perform_request(method, url, *args, **kwargs)
@@ -136,6 +155,16 @@ class MalwarecageAPI(object):
                 warnings.warn("Rate limit exceeded. Sleeping for a {} seconds.".format(retry_after))
                 time.sleep(retry_after)
                 # Retry failed request...
+            except (ConnectionError, GatewayError):
+                if not self.retry_on_downtime or downtime_retries == 0 or \
+                        (not self.retry_idempotent and method == "post"):
+                    raise
+                downtime_retries -= 1
+                warnings.warn('Retrying request due to connectivity issues. '
+                              'Sleeping for {} seconds.'.format(self.downtime_timeout))
+                time.sleep(self.downtime_timeout)
+                # Retry failed request...
+
         try:
             return response.json() if not raw else response.content
         except ValueError:

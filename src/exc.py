@@ -74,6 +74,13 @@ class InternalError(MalwarecageError):
     pass
 
 
+class GatewayError(MalwarecageError):
+    """
+    Bad Gateway or Gateway Timeout. It is serious but usually temporary, can be caused by new version deploy
+    or lack of resources.
+    """
+
+
 class NotAuthenticatedError(AuthError):
     """
     Authentication is required for specified request but credentials are not set. Use :py:meth:`Malwarecage.login` or
@@ -161,5 +168,7 @@ def map_http_error(http_error):
         return TypeConflictError(http_error=http_error)
     elif http_error.response.status_code == requests.codes.too_many_requests:
         return LimitExceededError(http_error=http_error)
+    elif http_error.response.status_code in [requests.codes.bad_gateway, requests.codes.gateway_timeout]:
+        return GatewayError(http_error=http_error)
     elif http_error.response.status_code >= 500:
         return InternalError(http_error=http_error)
