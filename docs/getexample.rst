@@ -5,9 +5,6 @@ Looking for recently uploaded files and retrieving them if file type contains "P
 
 .. code-block:: python
 
-    import itertools
-    import time
-
     from mwdblib import Malwarecage
 
     mwdb = Malwarecage(api_key="<secret>")
@@ -19,15 +16,40 @@ Looking for recently uploaded files and retrieving them if file type contains "P
                 f.write(sample.download())
             print("[+] PE32 downloaded successfully!")
 
-    last_sample = None
-    while True:
-         top_sample = next(mwdb.recent_samples()).id
+    for sample in mwdb.listen_for_files():
+        report_new_sample(sample)
 
-         if last_sample is not None:
-             for sample in itertools.takewhile(lambda s: s.id != last_sample.id,
-                                               mwdb.recent_samples()):
-                 report_new_sample(sample)
+Sometimes you want to keep track of the latest reported sample between script executions.
+Mwdblib doesn't concern itself with persistence - you need to store the latest reported object ID on your own.
 
-         last_sample = top_sample
-         # Wait 10 minutes before next try
-         time.sleep(600)
+.. code-block:: python
+
+    from mwdblib import Malwarecage
+
+    mwdb = Malwarecage(api_key="<secret>")
+
+
+    def store_last(last_id):
+        with open("last_id", "w") as f:
+            f.write(last_id)
+
+    def load_last():
+        try:
+            with open("last_id", "r") as f:
+                return f.read()
+        except IOError:
+            return None
+
+    def report_new_sample(sample):
+        print("Found new sample {} ({})".format(sample.name, sample.sha256))
+        if "PE32" in sample.type:
+            with open(sample.id, "wb") as f:
+                f.write(sample.download())
+            print("[+] PE32 downloaded successfully!")
+
+
+    last_id = load_last()
+    for sample in mwdb.listen_for_files(last_id):
+        report_new_sample(sample)
+        store_last(sample.id)
+
