@@ -88,7 +88,7 @@ def upload_config(mwdb, family, config_file, config_type, parent, private, publi
 @upload_params
 @confirm_action
 @pass_mwdb
-def upload_blob(mwdb, blob_type, blob_file, name, private, public, share_with):
+def upload_blob(mwdb, blob_type, blob_file, name, parent, private, public, share_with):
     """Upload blob object"""
     with click.open_file(blob_file, 'rb') as f:
         content = f.read()
@@ -97,6 +97,7 @@ def upload_blob(mwdb, blob_type, blob_file, name, private, public, share_with):
         name=name,
         type=blob_type,
         content=content,
+        parent=parent,
         private=private,
         public=public,
         share_with=share_with
