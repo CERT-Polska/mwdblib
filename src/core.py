@@ -416,7 +416,7 @@ class Malwarecage(object):
         :rtype: Iterator[:class:`MalwarecageFile`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent("file", query)
+        return self._recent(MalwarecageFile, query)
 
     def search_configs(self, query):
         """
@@ -427,7 +427,7 @@ class Malwarecage(object):
         :rtype: Iterator[:class:`MalwarecageConfig`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent("config", query)
+        return self._recent(MalwarecageConfig, query)
 
     def search_blobs(self, query):
         """
@@ -438,7 +438,7 @@ class Malwarecage(object):
         :rtype: Iterator[:class:`MalwarecageBlob`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent("blob", query)
+        return self._recent(MalwarecageBlob, query)
 
     @staticmethod
     def _convert_bytes(data):
