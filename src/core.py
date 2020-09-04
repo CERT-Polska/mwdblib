@@ -403,9 +403,7 @@ class Malwarecage(object):
         :rtype: Iterator[:class:`MalwarecageObject`]
         :raises: requests.exceptions.HTTPError
         """
-        result = self.api.post("search", json={"query": query})
-        for file in result:
-            yield MalwarecageObject.create(self.api, file)
+        return self._recent(MalwarecageObject, query)
 
     def search_files(self, query):
         """
@@ -453,35 +451,33 @@ class Malwarecage(object):
 
         return data
 
-    def _upload(self, type, parent=None, metakeys=None,
-                share_with=None, private=False, public=False,
-                req_files=None, req_json=None):
-        parent = parent or "root"
-
+    def _upload_params(self, parent=None, metakeys=None,
+                       share_with=None, private=False, public=False):
         if isinstance(parent, MalwarecageObject):
             parent = parent.id
 
         metakeys = metakeys or []
-        req_files = req_files or {}
-        req_json = req_json or {}
 
         if isinstance(metakeys, dict):
             metakeys = [{"key": key, "value": value}
                         for key, value_list in metakeys.items()
                         for value in (value_list if isinstance(value_list, list) else [value_list])]
 
-        if private and public:
-            raise ValidationError("Sample can't be both private and public")
+        if len([arg for arg in (share_with, private, public) if arg]) > 1:
+            raise ValidationError("'share_with', 'private' and 'public' arguments are exclusive")
+
         if public:
             share_with = "public"
-        if private:
+        elif private:
             share_with = self.api.logged_user
+        elif not share_with:
+            share_with = "*"
 
-        result = self.api.put("{}/{}".format(type, parent), data={
-            'metakeys': json.dumps({'metakeys': metakeys}),
-            'upload_as': share_with or "*"
-        }, files=req_files, json=self._convert_bytes(req_json))
-        return result
+        return {
+            'parent': parent,
+            'metakeys': metakeys,
+            'upload_as': share_with
+        }
 
     def upload_file(self, name, content, **kwargs):
         """
@@ -515,7 +511,10 @@ class Malwarecage(object):
                parent="3629344675705286607dd0f680c66c19f7e310a1",
                public=True)
         """
-        result = self._upload("file", req_files={'file': (name, content)}, **kwargs)
+        result = self.api.post("file", files={
+            'file': (name, content),
+            'options': json.dumps(self._upload_params(**kwargs))
+        })
         return MalwarecageFile(self.api, result)
 
     def upload_config(self, family, cfg, config_type="static", **kwargs):
@@ -557,11 +556,13 @@ class Malwarecage(object):
                parent="3629344675705286607dd0f680c66c19f7e310a1",
                public=True)
         """
-        result = self._upload("config", req_json={
+        params = {
             "family": family,
             "cfg": cfg,
             "config_type": config_type
-        }, **kwargs)
+        }
+        params.update(self._upload_params(**kwargs))
+        result = self.api.post("config", json=params)
         return MalwarecageConfig(self.api, result)
 
     def upload_blob(self, name, type, content, **kwargs):
@@ -588,9 +589,11 @@ class Malwarecage(object):
         :rtype: :class:`MalwarecageBlob`
         :raises: :class:`requests.exceptions.HTTPError`, :class:`ValueError`
         """
-        result = self._upload("blob", req_json={
+        params = {
             "blob_name": name,
             "blob_type": type,
             "content": content
-        }, **kwargs)
+        }
+        params.update(self._upload_params(**kwargs))
+        result = self.api.post("blob", json=params)
         return MalwarecageBlob(self.api, result)
