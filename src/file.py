@@ -2,6 +2,7 @@ from .object import MalwarecageObject, lazy_property
 
 
 class MalwarecageFile(MalwarecageObject):
+    URL_TYPE = "file"
     URL_PATTERN = "file/{id}"
     TYPE = "file"
 

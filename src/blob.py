@@ -2,6 +2,7 @@ from .object import MalwarecageObject, lazy_property
 
 
 class MalwarecageBlob(MalwarecageObject):
+    URL_TYPE = "blob"
     URL_PATTERN = "blob/{id}"
     TYPE = "text_blob"
 

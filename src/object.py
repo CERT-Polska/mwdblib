@@ -52,6 +52,7 @@ class MalwarecageObject(MalwarecageElement):
 
     If you really need to get synthetic instance - use internal :py:meth:`create` static method.
     """
+    URL_TYPE = "object"
     URL_PATTERN = "object/{id}"
 
     def _update(self, data):

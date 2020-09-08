@@ -383,7 +383,7 @@ class Malwarecage(object):
     def search(self, query):
         """
         Advanced search for objects using Lucene syntax.
-        If you already know type of object you are looking for, use specialized variants:
+        If you already know type of objects you are looking for, use specialized variants:
 
         - :py:meth:`search_files`
         - :py:meth:`search_configs`
@@ -437,6 +437,69 @@ class Malwarecage(object):
         :raises: requests.exceptions.HTTPError
         """
         return self._recent(MalwarecageBlob, query)
+
+    def _count(self, object_type, query=None):
+        params = {'query': query}
+        result = self.api.get(object_type.URL_TYPE + '/count', params=params)
+        return result
+
+    def count(self, query=None):
+        """
+        Returns number of objects matching provided query in Lucene syntax.
+        If you already know type of objects you want to count, use specialized variants:
+
+        - :py:meth:`count_files`
+        - :py:meth:`count_configs`
+        - :py:meth:`count_blobs`
+
+        Usage example:
+
+        .. code-block:: python
+
+            from mwdblib import Malwarecage
+
+            # Count samples tagged as evil and with size less than 100kB
+            result = mwdb.count_files("tag:evil AND file.size:[0 TO 100000]")
+
+        :param query: Query in Lucene syntax
+        :type query: str
+        :rtype: int
+        :raises: requests.exceptions.HTTPError
+        """
+        return self._count(MalwarecageObject, query)
+
+    def count_files(self, query=None):
+        """
+        Returns number of files matching provided query in Lucene syntax.
+
+        :param query: Query in Lucene syntax
+        :type query: str
+        :rtype: int
+        :raises: requests.exceptions.HTTPError
+        """
+        return self._count(MalwarecageFile, query)
+
+    def count_configs(self, query=None):
+        """
+        Returns number of configs matching provided query in Lucene syntax.
+
+        :param query: Query in Lucene syntax
+        :type query: str
+        :rtype: int
+        :raises: requests.exceptions.HTTPError
+        """
+        return self._count(MalwarecageConfig, query)
+
+    def count_blobs(self, query=None):
+        """
+        Returns number of blobs matching provided query in Lucene syntax.
+
+        :param query: Query in Lucene syntax
+        :type query: str
+        :rtype: int
+        :raises: requests.exceptions.HTTPError
+        """
+        return self._count(MalwarecageBlob, query)
 
     @staticmethod
     def _convert_bytes(data):

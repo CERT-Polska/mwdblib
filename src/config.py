@@ -2,6 +2,7 @@ from .object import MalwarecageObject, lazy_property
 
 
 class MalwarecageConfig(MalwarecageObject):
+    URL_TYPE = "config"
     URL_PATTERN = "config/{id}"
     TYPE = "static_config"
 
