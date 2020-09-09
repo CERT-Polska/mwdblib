@@ -4,7 +4,7 @@ API bindings for mwdb.cert.pl service, supporting both Python 2.x/3.x versions. 
 
 ## Usage and installation
 
-```buildoutcfg
+```
 $ pip install mwdblib
 
 or with CLI

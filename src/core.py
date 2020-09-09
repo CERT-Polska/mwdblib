@@ -20,10 +20,10 @@ except ImportError:
 
 class MWDB(object):
     """
-    Main object used for communication with MWDB
+    Main object used for communication with MWDB REST API
 
     :param api: Custom :class:`APIClient` used to communicate with MWDB
-    :type api: :class:`APIClient`, optional
+    :type api: :class:`mwdblib.APIClient`, optional
     :param api_key: API key used for authentication (omit if password-based authentication is used)
     :type api_key: str, optional
 
@@ -102,9 +102,8 @@ class MWDB(object):
                 if query is not None:
                     params["query"] = query
                 # 'object', 'file', 'config' or 'blob'?
-                endpoint = object_type.URL_PATTERN.split("/")[0]
-                result = self.api.get(endpoint, params=params)
-                key = endpoint+"s"
+                result = self.api.get(object_type.URL_TYPE, params=params)
+                key = object_type.URL_TYPE + "s"
                 if key not in result or len(result[key]) == 0:
                     return
                 for obj in result[key]:
@@ -306,7 +305,8 @@ class MWDB(object):
 
     def _query(self, object_type, hash, raise_not_found):
         try:
-            result = self.api.get(object_type.URL_PATTERN.format(id=hash))
+            url_pattern = object_type.URL_TYPE + "/{id}"
+            result = self.api.get(url_pattern.format(id=hash))
             return object_type.create(self.api, result)
         except ObjectNotFoundError:
             if not raise_not_found:
