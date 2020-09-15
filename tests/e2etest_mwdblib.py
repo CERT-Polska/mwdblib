@@ -1,5 +1,5 @@
 import os
-from src import Malwarecage
+from src import MWDB
 import unittest
 from itertools import islice
 from tests.request_counter import RequestsCounter
@@ -10,7 +10,7 @@ class TestE2E(unittest.TestCase):
         username = os.environ["MWDB_USER"]
         password = os.environ["MWDB_PASS"]
 
-        mwdb = Malwarecage()
+        mwdb = MWDB()
         mwdb.login(username, password)
         return mwdb
 
