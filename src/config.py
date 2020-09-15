@@ -1,23 +1,23 @@
-from .object import MalwarecageObject, lazy_property
+from .object import MWDBObject, lazy_property
 
 
-class MalwarecageConfig(MalwarecageObject):
+class MWDBConfig(MWDBObject):
     URL_PATTERN = "config/{id}"
     TYPE = "static_config"
 
     @staticmethod
     def create(api, data):
-        return MalwarecageConfig(api, data)
+        return MWDBConfig(api, data)
 
     def _update(self, data):
         if "cfg" in data:
-            from .blob import MalwarecageBlob
+            from .blob import MWDBBlob
             data = dict(data)
-            data["config"] = {k: (MalwarecageBlob(self.api, {"id": v["in-blob"]})
+            data["config"] = {k: (MWDBBlob(self.api, {"id": v["in-blob"]})
                                   if isinstance(v, dict) and "in-blob" in v
                                   else v)
                               for k, v in data["cfg"].items()}
-        super(MalwarecageConfig, self)._update(data)
+        super(MWDBConfig, self)._update(data)
 
     @lazy_property()
     def family(self):
@@ -44,7 +44,7 @@ class MalwarecageConfig(MalwarecageObject):
     def config_dict(self):
         """
         raw dict object with configuration
-        (in-blob keys are not mapped to :class:`MalwarecageBlob` objects)
+        (in-blob keys are not mapped to :class:`MWDBBlob` objects)
         """
         return self.data.get("cfg")
 
@@ -70,3 +70,7 @@ class MalwarecageConfig(MalwarecageObject):
         .. seealso:: :py:attr:`config_dict`
         """
         return self.cfg
+
+
+# Backwards compatibility
+MalwarecageConfig = MWDBConfig

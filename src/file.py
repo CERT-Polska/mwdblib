@@ -1,17 +1,17 @@
-from .object import MalwarecageObject, lazy_property
+from .object import MWDBObject, lazy_property
 
 
-class MalwarecageFile(MalwarecageObject):
+class MWDBFile(MWDBObject):
     URL_PATTERN = "file/{id}"
     TYPE = "file"
 
     def __init__(self, *args, **kwargs):
         self.preloaded_content = None
-        super(MalwarecageFile, self).__init__(*args, **kwargs)
+        super(MWDBFile, self).__init__(*args, **kwargs)
 
     @staticmethod
     def create(api, data):
-        return MalwarecageFile(api, data)
+        return MWDBFile(api, data)
 
     @lazy_property()
     def md5(self):
@@ -78,7 +78,7 @@ class MalwarecageFile(MalwarecageObject):
     @property
     def content(self):
         """
-        Returns file contents, calling :py:meth:`MalwarecageFile.download` if contents were not loaded yet
+        Returns file contents, calling :py:meth:`MWDBFile.download` if contents were not loaded yet
         """
         if self.preloaded_content is None:
             self.preloaded_content = self.download()
@@ -104,3 +104,7 @@ class MalwarecageFile(MalwarecageObject):
         """
         token = self.api.post("request/sample/{id}".format(**self.data))["url"].split("/")[-1]
         return self.api.get("download/{}".format(token), raw=True)
+
+
+# Backwards compatibility
+MalwarecageFile = MWDBFile

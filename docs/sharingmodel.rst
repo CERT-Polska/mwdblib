@@ -1,13 +1,13 @@
 Sharing model
 =============
 
-One of the main applications of Malwarecage is being an data exchange platform to share results of malware analysis across the researchers community.
+One of the main applications of MWDB is being an data exchange platform to share results of malware analysis across the researchers community.
 
-All Malwarecage users are grouped in common workspaces called *groups*. There are few types of groups:
+All MWDB users are grouped in common workspaces called *groups*. There are few types of groups:
 
 - **regular** groups, associating a group of users and allowing mutual exchange of data within the group
 - **private** groups, being an private workspace associated only with user account
-- **public** group, associated with all Malwarecage users and dedicated for public data sharing
+- **public** group, associated with all MWDB users and dedicated for public data sharing
 
 .. image:: _static/upload-form.png
    :width: 600
@@ -26,7 +26,7 @@ Access rights inheritance
 -------------------------
 
 If you add sample with specifing sharing rights, you actually share the whole subtree of objects. All object permissions
-are inherited from its parents, so using Malwarecage you're guaranteed to see all descendant objects from uploaded one.
+are inherited from its parents, so using MWDB you're guaranteed to see all descendant objects from uploaded one.
 
 .. image:: _static/sharing-diagram.png
    :width: 300

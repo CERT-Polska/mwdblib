@@ -4,9 +4,9 @@ Exception objects
 .. automodule:: mwdblib.exc
 
 .. inheritance-diagram:: mwdblib.exc
-   :top-classes: mwdblib.exc.MalwarecageError
+   :top-classes: mwdblib.exc.MWDBError
 
-.. autoclass:: mwdblib.exc.MalwarecageError
+.. autoclass:: mwdblib.exc.MWDBError
    :members:
 .. autoclass:: mwdblib.exc.AuthError
    :members:

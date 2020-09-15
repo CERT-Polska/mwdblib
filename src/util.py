@@ -14,7 +14,7 @@ def convert_to_utf8(obj):
 
 def _eval_config_dhash(obj):
     """ Compute a data hash from the object. This is the hashing algorithm
-    used internally by malwarecage to assign unique ids to configs
+    used internally by MWDB to assign unique ids to configs
     """
     if isinstance(obj, list):
         # For lists: evaluate hash recursively for all elements and sort them lexicographically
@@ -32,7 +32,7 @@ def _eval_config_dhash(obj):
 def config_dhash(obj):
     """
     Compute a data hash from the object. This is the hashing algorithm
-    used internally by malwarecage to assign unique ids to configs.
+    used internally by MWDB to assign unique ids to configs.
 
     .. versionchanged:: 3.3.0
         Added support for in-blob keys

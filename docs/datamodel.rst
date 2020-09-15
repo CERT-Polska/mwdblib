@@ -3,13 +3,13 @@
 Data model
 ===============
 
-Malwarecage organizes malware-related data using object model, which has been evolved from years of malware analysis and research in CERT.pl.
+MWDB organizes malware-related data using object model, which has been evolved from years of malware analysis and research in CERT.pl.
 Objects are defined by set of attributes and relations including few loose conventions described below. The model is still being developed, so it could change a bit over time.
 
 Object types
 ------------
 
-In Malwarecage model, we can distinguish three types of objects:
+In MWDB model, we can distinguish three types of objects:
 
 - **Files** (sometimes called *samples*) are representing malware samples in various forms - executable files, memory dumps, archives etc.
 - **Configs** containing structured malware data. These can be static configurations ripped from malware samples or parsed dynamic configurations from C&C servers, kept in JSON-like format.
@@ -23,7 +23,7 @@ Configs are hashed in order-insensitive way: keys and inner lists are sorted and
 Object relations
 ----------------
 
-Next part of Malwarecage model are relations between objects. Each object can be associated with parent or child objects, which are somehow related with them.
+Next part of MWDB model are relations between objects. Each object can be associated with parent or child objects, which are somehow related with them.
 
 Semantics of these relations are depending on object types:
 

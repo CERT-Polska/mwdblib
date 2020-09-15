@@ -13,7 +13,7 @@ from .types import HashFile
 @main.group("upload", cls=DefaultGroup, default='file', default_if_no_args=True)
 def upload_command():
     """
-    Upload object into Malwarecage
+    Upload object into MWDB
     """
     pass
 
