@@ -1,13 +1,13 @@
-from .object import MalwarecageObject, lazy_property
+from .object import MWDBObject, lazy_property
 
 
-class MalwarecageBlob(MalwarecageObject):
+class MWDBBlob(MWDBObject):
     URL_PATTERN = "blob/{id}"
     TYPE = "text_blob"
 
     @staticmethod
     def create(api, data):
-        return MalwarecageBlob(api, data)
+        return MWDBBlob(api, data)
 
     @lazy_property()
     def blob_name(self):
@@ -68,7 +68,11 @@ class MalwarecageBlob(MalwarecageObject):
     def last_seen(self):
         """
         :rtype: datetime.datetime
-        :return: datetime object when blob was last seen in Malwarecage
+        :return: datetime object when blob was last seen in MWDB
         """
         import dateutil.parser
         return dateutil.parser.parse(self.data["last_seen"]) if "last_seen" in self.data else None
+
+
+# Backwards compatibility
+MalwarecageBlob = MWDBBlob

@@ -3,11 +3,11 @@ Object types
 
 .. automodule:: mwdblib
 
-.. autoclass:: MalwarecageObject
+.. autoclass:: MWDBObject
     :members:
-.. autoclass:: MalwarecageFile
+.. autoclass:: MWDBFile
     :members:
-.. autoclass:: MalwarecageConfig
+.. autoclass:: MWDBConfig
     :members:
-.. autoclass:: MalwarecageBlob
+.. autoclass:: MWDBBlob
     :members:

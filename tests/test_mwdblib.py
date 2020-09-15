@@ -6,9 +6,9 @@ class TestPublicApi(unittest.TestCase):
         """
         This imports are a part of the public API and should never be removed
         """
-        from src import Malwarecage  # noqa
-        from src import MalwarecageAPI  # noqa
-        from src import MalwarecageFile  # noqa
-        from src import MalwarecageObject  # noqa
-        from src import MalwarecageConfig  # noqa
-        from src import MalwarecageBlob  # noqa
+        from src import MWDB  # noqa
+        from src import APIClient # noqa
+        from src import MWDBFile  # noqa
+        from src import MWDBObject  # noqa
+        from src import MWDBConfig  # noqa
+        from src import MWDBBlob  # noqa

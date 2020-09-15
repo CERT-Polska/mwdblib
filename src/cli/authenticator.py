@@ -6,9 +6,9 @@ from click.globals import get_current_context
 import click
 import keyring
 
-from ..api import MalwarecageAPI, API_URL
-from ..core import Malwarecage
-from ..exc import MalwarecageError
+from ..api import APIClient, API_URL
+from ..core import MWDB
+from ..exc import MWDBError
 
 
 class MwdbAuthenticator(object):
@@ -26,14 +26,14 @@ class MwdbAuthenticator(object):
 
     def get_authenticated_mwdb(self, api_url=None):
         """
-        Gets pre-authenticated Malwarecage object based on local configuration
+        Gets pre-authenticated MWDB object based on local configuration
         :param api_url: Alternative API url provided explicitly by user
-        :rtype: Malwarecage
+        :rtype: MWDB
         """
         api_url = api_url or self.config.get("mwdb", "api_url", fallback=API_URL)
-        api = MalwarecageAPI(api_url=api_url,
-                             verify_ssl=self.config.getboolean("mwdb", "verify_ssl", fallback=True),
-                             obey_ratelimiter=self.config.getboolean("mwdb", "obey_ratelimiter", fallback=True))
+        api = APIClient(api_url=api_url,
+                        verify_ssl=self.config.getboolean("mwdb", "verify_ssl", fallback=True),
+                        obey_ratelimiter=self.config.getboolean("mwdb", "obey_ratelimiter", fallback=True))
 
         username = self.config.get("mwdb", "username", fallback=None)
         if username is not None:
@@ -43,7 +43,7 @@ class MwdbAuthenticator(object):
             else:
                 password = keyring.get_password("mwdb", username)
                 api.login(username, password, warn=False)
-        mwdb = Malwarecage(api=api)
+        mwdb = MWDB(api=api)
         # If not authenticated: ask for credentials
         if mwdb.api.api_key is None:
             mwdb.login(warn=False)
@@ -57,7 +57,7 @@ class MwdbAuthenticator(object):
         :param api_key: API key to store
         """
         if api_key is not None:
-            api = MalwarecageAPI(api_key=api_key)
+            api = APIClient(api_key=api_key)
             username = api.logged_user
             self.set_config("username", username)
             keyring.set_password("mwdb-apikey", username, api_key)
@@ -104,7 +104,7 @@ def pass_mwdb(fn):
         mwdb = authenticator.get_authenticated_mwdb(ctx.obj.get("api_url", None))
         try:
             return fn(mwdb=mwdb, *args, **kwargs)
-        except MalwarecageError as error:
+        except MWDBError as error:
             click.echo("{}: {}".format(error.__class__.__name__, error.args[0]), err=True)
             ctx.abort()
     return wrapper

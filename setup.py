@@ -15,7 +15,7 @@ with open("src/__version__.py") as f:
 
 setup(name="mwdblib",
       version=version_info["__version__"],
-      description="Malwarecage API bindings for Python",
+      description="MWDB API bindings for Python",
       author="psrok1",
       package_dir={'mwdblib': 'src', 'mwdblib.cli': 'src/cli', 'mwdblib.cli.formatters': 'src/cli/formatters'},
       packages=['mwdblib', 'mwdblib.cli', 'mwdblib.cli.formatters'],

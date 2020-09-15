@@ -3,7 +3,7 @@ Command-line interface
 
 .. versionadded:: 3.0.0
 
-Malwarecage library is providing optional command line interface, which can be used to interact with MWDB repository.
+MWDB library is providing optional command line interface, which can be used to interact with MWDB repository.
 
 Command-line interface can be installed using `pip` and is available via `mwdb` command:
 
@@ -16,7 +16,7 @@ Command-line interface can be installed using `pip` and is available via `mwdb` 
 User authentication
 -------------------
 
-Before we start, we need to setup credentials. If you don't do that, you will be asked for them on each access to Malwarecage API.
+Before we start, we need to setup credentials. If you don't do that, you will be asked for them on each access to MWDB API.
 
 .. code-block:: none
 
@@ -43,7 +43,7 @@ Let's start with listing the latest samples in your workspace. After typing
 
    $ mwdb list
 
-you will see the list of samples similar to the main Malwarecage webapp view.
+you will see the list of samples similar to the main MWDB webapp view.
 
 .. image:: _static/sample-list.png
    :width: 800

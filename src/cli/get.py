@@ -25,15 +25,15 @@ def get_details(ctx, mwdb, formatter, file_or_hash):
     """
     Get detailed information about object
     """
-    from ..file import MalwarecageFile
-    from ..config import MalwarecageConfig
-    from ..blob import MalwarecageBlob
+    from ..file import MWDBFile
+    from ..config import MWDBConfig
+    from ..blob import MWDBBlob
     obj = mwdb.query(file_or_hash)
-    if isinstance(obj, MalwarecageFile):
+    if isinstance(obj, MWDBFile):
         output = formatter.format_file_detailed(obj)
-    elif isinstance(obj, MalwarecageConfig):
+    elif isinstance(obj, MWDBConfig):
         output = formatter.format_config_detailed(obj)
-    elif isinstance(obj, MalwarecageBlob):
+    elif isinstance(obj, MWDBBlob):
         output = formatter.format_blob_detailed(obj)
     else:
         output = None  # just to satisfy linter
