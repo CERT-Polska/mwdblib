@@ -6,7 +6,7 @@ from .formatters import confirm_action
 from .main import main
 from .types import Hash
 
-from ..file import MalwarecageFile
+from ..file import MWDBFile
 
 
 @main.command("fetch")
@@ -23,7 +23,7 @@ def fetch_command(mwdb, hash, destination, keep_name):
     object = mwdb.query(hash)
     if destination is None:
         output_path = None
-        if isinstance(object, MalwarecageFile) and keep_name:
+        if isinstance(object, MWDBFile) and keep_name:
             if object.name:
                 output_path = os.path.basename(object.name)
             else:

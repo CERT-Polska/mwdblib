@@ -1,10 +1,10 @@
-Malwarecage core interface
+mwdblib core interface
 ==================================
 
 .. automodule:: mwdblib
 
-.. autoclass:: Malwarecage
+.. autoclass:: MWDB
     :members:
 
-.. autoclass:: MalwarecageAPI
+.. autoclass:: APIClient
     :members:

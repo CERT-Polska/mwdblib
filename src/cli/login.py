@@ -7,15 +7,15 @@ from ..exc import InvalidCredentialsError
 
 @main.command("login")
 @click.option("--username", "-u", type=str, default=None,
-              help="Malwarecage user name (default: ask)")
+              help="MWDB user name (default: ask)")
 @click.option("--password", "-p", type=str, default=None,
-              help="Malwarecage password (default: ask)")
+              help="MWDB password (default: ask)")
 @click.option("--via-api-key", "-A", is_flag=True)
 @click.option("--api-key", "-a", type=str, default=None,
               help="API key token (default: password-based authentication)")
 @click.pass_context
 def login_command(ctx, username, password, via_api_key, api_key):
-    """Setup credentials for Malwarecage authentication"""
+    """Setup credentials for MWDB authentication"""
     if via_api_key:
         api_key = click.prompt("Provide your API key token", hide_input=True)
     if api_key is None:

@@ -1,13 +1,13 @@
-Getting data automatically from Malwarecage
+Getting data automatically from MWDB
 ===========================================
 
 Looking for recently uploaded files and retrieving them if file type contains "PE32":
 
 .. code-block:: python
 
-    from mwdblib import Malwarecage
+    from mwdblib import MWDB
 
-    mwdb = Malwarecage(api_key="<secret>")
+    mwdb = MWDB(api_key="<secret>")
 
     def report_new_sample(sample):
         print("Found new sample {} ({})".format(sample.name, sample.sha256))
@@ -24,9 +24,9 @@ Mwdblib doesn't concern itself with persistence - you need to store the latest r
 
 .. code-block:: python
 
-    from mwdblib import Malwarecage
+    from mwdblib import MWDB
 
-    mwdb = Malwarecage(api_key="<secret>")
+    mwdb = MWDB(api_key="<secret>")
 
 
     def store_last(last_id):

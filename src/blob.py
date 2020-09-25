@@ -1,35 +1,36 @@
-from .object import MalwarecageObject, lazy_property
+from .object import MWDBObject
 
 
-class MalwarecageBlob(MalwarecageObject):
+class MWDBBlob(MWDBObject):
     URL_TYPE = "blob"
-    URL_PATTERN = "blob/{id}"
     TYPE = "text_blob"
 
-    @staticmethod
-    def create(api, data):
-        return MalwarecageBlob(api, data)
-
-    @lazy_property()
+    @property
     def blob_name(self):
         """
         Blob name
         """
-        return self.data.get("blob_name")
+        if "blob_name" not in self.data:
+            self._load()
+        return self.data["blob_name"]
 
-    @lazy_property()
+    @property
     def blob_size(self):
         """
         Blob size in bytes
         """
-        return self.data.get("blob_size")
+        if "blob_size" not in self.data:
+            self._load()
+        return self.data["blob_size"]
 
-    @lazy_property()
+    @property
     def blob_type(self):
         """
         Blob semantic type
         """
-        return self.data.get("blob_type")
+        if "blob_type" not in self.data:
+            self._load()
+        return self.data["blob_type"]
 
     @property
     def name(self):
@@ -52,7 +53,7 @@ class MalwarecageBlob(MalwarecageObject):
         """
         return self.blob_type
 
-    @lazy_property()
+    @property
     def content(self):
         """
         Contains blob content
@@ -60,16 +61,39 @@ class MalwarecageBlob(MalwarecageObject):
         .. versionchanged:: 3.0.0
            Returned type is guaranteed to be utf8-encoded bytes
         """
-        content = self.data.get("content")
-        if content is not None and not isinstance(content, bytes):
+        if "content" not in self.data:
+            self._load()
+        content = self.data["content"]
+        if not isinstance(content, bytes):
             content = content.encode("utf-8")
         return content
 
-    @lazy_property()
+    @property
+    def config(self):
+        """
+        Returns latest config related with this object
+
+        :rtype: :class:`MWDBConfig` or None
+        :return: Latest configuration if found
+        """
+        from .config import MWDBConfig
+        if "latest_config" not in self.data:
+            self._load()
+        if self.data["latest_config"] is None:
+            return None
+        return MWDBConfig(self.api, self.data["latest_config"])
+
+    @property
     def last_seen(self):
         """
         :rtype: datetime.datetime
-        :return: datetime object when blob was last seen in Malwarecage
+        :return: datetime object when blob was last seen in MWDB
         """
         import dateutil.parser
-        return dateutil.parser.parse(self.data["last_seen"]) if "last_seen" in self.data else None
+        if "last_seen" not in self.data:
+            self._load()
+        return dateutil.parser.parse(self.data["last_seen"])
+
+
+# Backwards compatibility
+MalwarecageBlob = MWDBBlob

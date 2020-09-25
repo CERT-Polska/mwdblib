@@ -1,7 +1,7 @@
-from .object import MalwarecageElement, MalwarecageObject
+from .object import MWDBElement, MWDBObject
 
 
-class MalwarecageShareReason(object):
+class MWDBShareReason(object):
     """
     Represents the reason why object was shared with specified group
     """
@@ -15,10 +15,10 @@ class MalwarecageShareReason(object):
         """
         Returns what was shared
 
-        :rtype: :class:`mwdblib.MalwarecageObject` or None
+        :rtype: :class:`mwdblib.MWDBObject` or None
         """
         if self._related_object is None:
-            self._related_object = MalwarecageObject.create(self.api, {
+            self._related_object = MWDBObject.create(self.api, {
                 "id": self._data["related_object_dhash"],
                 "type": self._data["related_object_type"]
             })
@@ -52,12 +52,12 @@ class MalwarecageShareReason(object):
                                        self._data["related_user_login"])
 
 
-class MalwarecageShare(MalwarecageElement):
+class MWDBShare(MWDBElement):
     """
-    Represents share entry in Malwarecage object
+    Represents share entry in MWDB object
     """
     def __init__(self, api, data, parent):
-        super(MalwarecageShare, self).__init__(api, data)
+        super(MWDBShare, self).__init__(api, data)
         self.parent = parent
 
     @property
@@ -86,6 +86,11 @@ class MalwarecageShare(MalwarecageElement):
         """
         Returns why object was shared
 
-        :rtype: :class:`MalwarecageShareReason`
+        :rtype: :class:`MWDBShareReason`
         """
-        return MalwarecageShareReason(self.api, self.data)
+        return MWDBShareReason(self.api, self.data)
+
+
+# Backwards compatibility
+MalwarecageShareReason = MWDBShareReason
+MalwarecageShare = MWDBShare

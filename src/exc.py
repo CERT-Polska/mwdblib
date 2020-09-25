@@ -1,9 +1,9 @@
 import requests
 
 
-class MalwarecageError(RuntimeError):
+class MWDBError(RuntimeError):
     """
-    Generic class for Malwarecage exceptions
+    Generic class for MWDB exceptions
 
     :param message: Error message
     :type message: str
@@ -14,17 +14,17 @@ class MalwarecageError(RuntimeError):
         self.http_error = http_error
         if message is None and http_error is not None:
             message = get_http_error_message(http_error)
-        super(MalwarecageError, self).__init__(message)
+        super(MWDBError, self).__init__(message)
 
 
-class AuthError(MalwarecageError):
+class AuthError(MWDBError):
     """
     Authentication error, raised on HTTP 401: Unauthorized.
     """
     pass
 
 
-class ValidationError(MalwarecageError):
+class ValidationError(MWDBError):
     """
     Validation error, raised on HTTP 400: Bad Request. Check the message to find more information about this error.
 
@@ -38,43 +38,43 @@ class ValidationError(MalwarecageError):
     pass
 
 
-class ObjectError(MalwarecageError):
+class ObjectError(MWDBError):
     """
     Object error, raised when specified object cannot be accessed or uploaded.
     """
     pass
 
 
-class PermissionError(MalwarecageError):
+class PermissionError(MWDBError):
     """
     Permission error, raised when permissions are unsufficient (HTTP 403: Forbidden).
     """
     pass
 
 
-class LimitExceededError(MalwarecageError):
+class LimitExceededError(MWDBError):
     """
-    Rate limit exceeded error. Malwarecage will try to throttle requests unless `obey_ratelimiter` flag is set.
-    """
-    pass
-
-
-class BadResponseError(MalwarecageError):
-    """
-    Can't decode JSON response from server. Probably MalwarecageAPI.api_url points to the Malwarecage web app
-    instead of Malwarecage REST API.
+    Rate limit exceeded error. MWDB will try to throttle requests unless `obey_ratelimiter` flag is set.
     """
     pass
 
 
-class InternalError(MalwarecageError):
+class BadResponseError(MWDBError):
+    """
+    Can't decode JSON response from server. Probably APIClient.api_url points to the MWDB web app
+    instead of MWDB REST API.
+    """
+    pass
+
+
+class InternalError(MWDBError):
     """
     Internal error. Something really bad occurred on the server side.
     """
     pass
 
 
-class GatewayError(MalwarecageError):
+class GatewayError(MWDBError):
     """
     Bad Gateway or Gateway Timeout. It is serious but usually temporary, can be caused by new version deploy
     or lack of resources.
@@ -83,7 +83,7 @@ class GatewayError(MalwarecageError):
 
 class NotAuthenticatedError(AuthError):
     """
-    Authentication is required for specified request but credentials are not set. Use :py:meth:`Malwarecage.login` or
+    Authentication is required for specified request but credentials are not set. Use :py:meth:`MWDB.login` or
     set API key.
     """
     pass
@@ -112,7 +112,7 @@ class UserDisabledError(AuthError):
 
 class MaintenanceUnderwayError(AuthError):
     """
-    Malwarecage has been turned into maintenance mode. Try again later.
+    MWDB has been turned into maintenance mode. Try again later.
     """
     pass
 
@@ -126,7 +126,7 @@ class ObjectNotFoundError(ObjectError):
 
 class TypeConflictError(ObjectError):
     """
-    Object you want to upload exists yet and has different type. Use :py:meth:`Malwarecage.query` to find it.
+    Object you want to upload exists yet and has different type. Use :py:meth:`MWDB.query` to find it.
     If you don't have access (:class:`ObjectNotFoundError` is raised), try to upload it as config or blob.
     Double check whether the data you want to upload are meaningful (not an empty file or single string).
     """
@@ -172,3 +172,7 @@ def map_http_error(http_error):
         return GatewayError(http_error=http_error)
     elif http_error.response.status_code >= 500:
         return InternalError(http_error=http_error)
+
+
+# Backwards compatibility
+MalwarecageError = MWDBError

@@ -3,9 +3,9 @@ Secondary objects
 
 .. automodule:: mwdblib
 
-.. autoclass:: mwdblib.comment.MalwarecageComment
+.. autoclass:: mwdblib.comment.MWDBComment
     :members:
-.. autoclass:: mwdblib.share.MalwarecageShare
+.. autoclass:: mwdblib.share.MWDBShare
     :members:
-.. autoclass:: mwdblib.share.MalwarecageShareReason
+.. autoclass:: mwdblib.share.MWDBShareReason
     :members:

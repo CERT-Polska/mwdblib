@@ -3,8 +3,10 @@ import json
 import warnings
 import time
 
-from .exc import InvalidCredentialsError, NotAuthenticatedError, LimitExceededError, \
-                 BadResponseError, GatewayError, map_http_error
+from .exc import (
+    InvalidCredentialsError, NotAuthenticatedError, LimitExceededError,
+    BadResponseError, GatewayError, map_http_error
+)
 
 try:
     from urlparse import urljoin
@@ -20,7 +22,25 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 API_URL = "https://mwdb.cert.pl/api/"
 
 
-class MalwarecageAPI(object):
+class APIClient(object):
+    """
+    API object used to talk with a MWDB instance directly.
+
+    :param api_url: MWDB instance URL. Should end with a slash.
+    :param api_key: Optional API key.
+    :param verify_ssl: Should the api verify SSL certificate correctness?
+    :param obey_ratelimiter: If false, HTTP 429 errors will cause an exception like all other error codes.
+        If true (default), library will transparently handle them by sleeping for a specified duration.
+    :param retry_on_downtime: If true, requests will be automatically retried after 10 seconds
+        on HTTP 502/504 and ConnectionError.
+    :param max_downtime_retries: Number of retries caused by temporary downtime
+    :param downtime_timeout: How long we need to wait between retries (in seconds)
+    :param retry_idempotent: Retry idempotent POST requests (default).
+        The only thing that is really non-idempotent in current API is :meth:`MWDBObject.add_comment`,
+        so it's not a big deal. You can turn it off if possible doubled comments
+        are problematic in your MWDB instance.
+    """
+
     def __init__(
         self,
         api_url=API_URL,
@@ -32,28 +52,12 @@ class MalwarecageAPI(object):
         downtime_timeout=10,
         retry_idempotent=True
     ):
-        """ API object used to talk with a malwarecage instance directly.
-
-        :param api_url: Malwarecage instance URL. Should end with a slash.
-        :param api_key: Optional API key.
-        :param verify_ssl: Should the api verify SSL certificate correctness?
-        :param obey_ratelimiter: If false, HTTP 429 errors will cause an
-        exception like all other error codes. If true (default), library will
-        transparently handle them by sleeping for a specified duration.
-        :param retry_on_downtime: If true, requests will be automatically
-        retried after 10 seconds on HTTP 502/504 and ConnectionError.
-        :param max_downtime_retries: Number of retries caused by temporary downtime
-        :param downtime_timeout: How long we need to wait between retries (in seconds)
-        :param retry_idempotent: Retry idempotent POST requests (default). The only thing
-        that is really non-idempotent in current API is :meth:`MalwarecageObject.add_comment`,
-        so it's not a big deal. You can turn it off if possible doubled comments
-        are problematic in your Malwarecage instance.
-        """
         self.api_url = api_url
         if not self.api_url.endswith("/"):
             self.api_url += "/"
-            warnings.warn("MalwarecageAPI.api_url should end with a trailing slash. "
-                          "Fix your configuration. Missing character was added to the URL.")
+        if not self.api_url.endswith("/api/"):
+            warnings.warn("APIClient.api_url doesn't end with '/api/'. Make sure you have passed"
+                          "URL to the REST API instead of MWDB UI")
         self.api_key = None
         self.logged_user = None
         self.session = requests.Session()
@@ -85,7 +89,7 @@ class MalwarecageAPI(object):
     def login(self, username, password, warn=True):
         if warn:
             warnings.warn("Password-authenticated sessions are short lived, so password needs to be stored "
-                          "in MalwarecageAPI object. Ask Malwarecage instance administrator for an API key "
+                          "in APIClient object. Ask MWDB instance administrator for an API key "
                           "(send e-mail to info@cert.pl if you use mwdb.cert.pl)")
         result = self.post("auth/login", json={
             "login": username,
@@ -113,8 +117,8 @@ class MalwarecageAPI(object):
         # Check if authenticated yet
         if not noauth and self.api_key is None:
             raise NotAuthenticatedError(
-                'API credentials for MWDB2 were not set, call MalwarecageAPI.set_api_key or '
-                'Malwarecage.login first'
+                'API credentials for MWDB were not set, pass api_key parameter '
+                'to MWDB or call MWDB.login first'
             )
 
         # Set method name and request URL
@@ -170,7 +174,7 @@ class MalwarecageAPI(object):
         except ValueError:
             raise BadResponseError(
                 "Can't decode JSON response from server. "
-                "Probably MalwarecageAPI.api_url points to the Malwarecage web app instead of Malwarecage REST API."
+                "Probably APIClient.api_url points to the MWDB web app instead of MWDB REST API."
             )
 
     def get(self, *args, **kwargs):
@@ -184,3 +188,7 @@ class MalwarecageAPI(object):
 
     def delete(self, *args, **kwargs):
         return self.request("delete", *args, **kwargs)
+
+
+# Backwards compatibility
+MalwarecageAPI = APIClient

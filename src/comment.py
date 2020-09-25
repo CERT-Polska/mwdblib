@@ -1,13 +1,20 @@
-from .object import MalwarecageElement
+from .object import MWDBElement
 
 
-class MalwarecageComment(MalwarecageElement):
+class MWDBComment(MWDBElement):
     """
-    Represents comment for Malwarecage object
+    Represents comment for MWDB object
     """
     def __init__(self, api, data, parent):
-        super(MalwarecageComment, self).__init__(api, data)
+        super(MWDBComment, self).__init__(api, data)
         self.parent = parent
+
+    @property
+    def id(self):
+        """
+        Comment identifier
+        """
+        return self.data["id"]
 
     @property
     def author(self):
@@ -44,3 +51,7 @@ class MalwarecageComment(MalwarecageElement):
         :raises: requests.exceptions.HTTPError
         """
         self.api.delete("object/{}/comment/{}".format(self.parent.id, self.id))
+
+
+# Backwards compatibility
+MalwarecageComment = MWDBComment

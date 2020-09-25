@@ -1,40 +1,52 @@
 from collections import defaultdict
-from functools import wraps
 
 
-class PropertyUnloaded(RuntimeError):
-    pass
-
-
-def lazy_property(url_pattern=None, nullable=False):
-    def wrapper(f):
-        @property
-        @wraps(f)
-        def wrapped_property(self):
-            url = (url_pattern or getattr(self, "URL_PATTERN", None)).format(**self.data)
-            property = f.__name__
-            mapper = getattr(self, "mapper_{}".format(property), lambda d: d)
-            try:
-                result = f(self)
-                if result is None and not nullable:
-                    raise PropertyUnloaded()
-                return result
-            except PropertyUnloaded:
-                data = self.api.get(url)
-                self._update(mapper(data))
-                return f(self)
-        return wrapped_property
-    return wrapper
-
-
-class MalwarecageElement(object):
+class MWDBElement(object):
     def __init__(self, api, data):
         self.api = api
-        self.data = {}
-        self._update(data)
+        self.data = dict(data)
 
-    def _update(self, data):
+    def _load(self, url_pattern, mapper=None):
+        data = self.api.get(url_pattern.format(**self.data))
+        if mapper is not None:
+            data = mapper(data)
         self.data.update(data)
+
+    def _expire(self, key):
+        if key in self.data:
+            del self.data[key]
+
+
+class MWDBObject(MWDBElement):
+    """
+    Represents abstract, generic MWDB object.
+
+    Should never be instantiated directly.
+
+    If you really need to get synthetic instance - use internal :py:meth:`create` static method.
+    """
+    URL_TYPE = "object"
+    TYPE = "object"
+
+    def _load(self, url_pattern=None, mapper=None):
+        if url_pattern is None:
+            url_pattern = self.URL_TYPE + "/{id}"
+        return super(MWDBObject, self)._load(url_pattern, mapper=mapper)
+
+    @staticmethod
+    def create(api, data):
+        from .file import MWDBFile
+        from .config import MWDBConfig
+        from .blob import MWDBBlob
+        type = data["type"]
+        if type == MWDBFile.TYPE:
+            return MWDBFile(api, data)
+        elif type == MWDBConfig.TYPE:
+            return MWDBConfig(api, data)
+        elif type == MWDBBlob.TYPE:
+            return MWDBBlob(api, data)
+        else:
+            return None
 
     @property
     def id(self):
@@ -42,48 +54,6 @@ class MalwarecageElement(object):
         Object identifier (sha256)
         """
         return self.data["id"]
-
-
-class MalwarecageObject(MalwarecageElement):
-    """
-    Represents abstract, generic Malwarecage object.
-
-    Should never be instantiated directly.
-
-    If you really need to get synthetic instance - use internal :py:meth:`create` static method.
-    """
-    URL_TYPE = "object"
-    URL_PATTERN = "object/{id}"
-
-    def _update(self, data):
-        from .config import MalwarecageConfig
-        if "config" not in data:
-            data = dict(data)
-            if "latest_config" in data and data["latest_config"]:
-                data["config"] = MalwarecageConfig(self.api, data["latest_config"])
-            elif "children" in data:
-                """
-                If there are children but no latest_config: probably API is in old version
-                Try to emulate
-                """
-                config = next((child for child in data["children"] if child["type"] == "static_config"), None)
-                data["config"] = config and MalwarecageConfig(self.api, config)
-        super(MalwarecageObject, self)._update(data)
-
-    @staticmethod
-    def create(api, data):
-        from .file import MalwarecageFile
-        from .config import MalwarecageConfig
-        from .blob import MalwarecageBlob
-        type = data["type"]
-        if type == MalwarecageFile.TYPE:
-            return MalwarecageFile(api, data)
-        elif type == MalwarecageConfig.TYPE:
-            return MalwarecageConfig(api, data)
-        elif type == MalwarecageBlob.TYPE:
-            return MalwarecageBlob(api, data)
-        else:
-            return None
 
     @property
     def object_type(self):
@@ -99,10 +69,7 @@ class MalwarecageObject(MalwarecageElement):
         """
         return self.id
 
-    def mapper_tags(self, data):
-        return {"tags": data}
-
-    @lazy_property("object/{id}/tag")
+    @property
     def tags(self):
         """
         Returns list of tags
@@ -110,17 +77,16 @@ class MalwarecageObject(MalwarecageElement):
         :rtype: list[str]
         :return: List of tags
         """
-        return [t["tag"] for t in self.data["tags"]] if "tags" in self.data else None
+        if "tags" not in self.data:
+            self._load("object/{id}/tag", mapper=lambda data: {"tags": data})
+        return [t["tag"] for t in self.data["tags"]]
 
-    def mapper_comments(self, data):
-        return {"comments": data}
-
-    @lazy_property("object/{id}/comment")
+    @property
     def comments(self):
         """
         Returns list of comments
 
-        :rtype: list[:class:`mwdblib.comment.MalwarecageComment`]
+        :rtype: list[:class:`mwdblib.comment.MWDBComment`]
         :return: List of comment objects
 
         Example - print all comments of last object commented as "malware":
@@ -131,26 +97,31 @@ class MalwarecageObject(MalwarecageElement):
             for comment in comments:
                 print("{} {}".format(comment.author, comment.comment))
         """
-        from .comment import MalwarecageComment
-        return list(map(lambda c: MalwarecageComment(self.api, c, self), self.data["comments"])) \
-            if "comments" in self.data else None
+        from .comment import MWDBComment
+        if "comments" not in self.data:
+            self._load("object/{id}/comment", mapper=lambda data: {"comments": data})
+        return [
+            MWDBComment(self.api, comment, self)
+            for comment in self.data["comments"]
+        ]
 
-    def mapper_shares(self, data):
-        return {"shares": data.get("shares", [])}
-
-    @lazy_property("object/{id}/share")
+    @property
     def shares(self):
         """
         Returns list of shares
 
-        :rtype: list[:class:`mwdblib.share.MalwarecageShare`]
+        :rtype: list[:class:`mwdblib.share.MWDBShare`]
         :return: List of share objects
         """
-        from .share import MalwarecageShare
-        return list(map(lambda s: MalwarecageShare(self.api, s, self), self.data["shares"])) \
-            if "shares" in self.data else None
+        from .share import MWDBShare
+        if "shares" not in self.data:
+            self._load("object/{id}/share", mapper=lambda data: {"shares": data.get("shares", [])})
+        return [
+            MWDBShare(self.api, share, self)
+            for share in self.data["shares"]
+        ]
 
-    @lazy_property("object/{id}/meta")
+    @property
     def metakeys(self):
         """
         Returns dict object with metakeys.
@@ -159,13 +130,13 @@ class MalwarecageObject(MalwarecageElement):
         :return: Dict object containing metakey attributes
         """
         if "metakeys" not in self.data:
-            return None
+            self._load("object/{id}/meta")
         result = defaultdict(list)
         for m in self.data["metakeys"]:
             result[m["key"]].append(m["value"])
         return dict(result)
 
-    @lazy_property()
+    @property
     def upload_time(self):
         """
         Returns timestamp of first object upload
@@ -174,41 +145,39 @@ class MalwarecageObject(MalwarecageElement):
         :return: datetime object with object upload timestamp
         """
         import dateutil.parser
-        return dateutil.parser.parse(self.data["upload_time"]) if "upload_time" in self.data else None
+        if "upload_time" not in self.data:
+            self._load()
+        return dateutil.parser.parse(self.data["upload_time"])
 
-    @lazy_property()
+    @property
     def parents(self):
         """
         Returns list of parent objects
 
-        :rtype: List[:class:`MalwarecageObject`]
+        :rtype: List[:class:`MWDBObject`]
         :return: List of parent objects
         """
-        return list(map(lambda o: MalwarecageObject.create(self.api, o), self.data["parents"])) \
-            if "parents" in self.data else None
+        if "parents" not in self.data:
+            self._load()
+        return [
+            self.create(self.api, parent)
+            for parent in self.data["parents"]
+        ]
 
-    @lazy_property()
+    @property
     def children(self):
         """
         Returns list of child objects
 
-        :rtype: List[:class:`MalwarecageObject`]
+        :rtype: List[:class:`MWDBObject`]
         :return: List of child objects
         """
-        return list(map(lambda o: MalwarecageObject.create(self.api, o), self.data["children"])) \
-            if "children" in self.data else None
-
-    @lazy_property(nullable=True)
-    def config(self):
-        """
-        Returns latest config related with this object
-
-        :rtype: :class:`MalwarecageConfig` or None
-        :return: Latest configuration if found
-        """
-        if "config" not in self.data:
-            raise PropertyUnloaded()
-        return self.data["config"]
+        if "children" not in self.data:
+            self._load()
+        return [
+            self.create(self.api, child)
+            for child in self.data["children"]
+        ]
 
     @property
     def content(self):
@@ -216,7 +185,7 @@ class MalwarecageObject(MalwarecageElement):
         Returns stringified contents of object
 
         .. versionadded:: 3.0.0
-           Added :py:attr:`MalwarecageObject.content` property
+           Added :py:attr:`MWDBObject.content` property
 
         :rtype: bytes
         """
@@ -227,13 +196,12 @@ class MalwarecageObject(MalwarecageElement):
         Adds reference to child with current object as parent
 
         :param child: Object or object identifier (sha256)
-        :type child: MalwarecageObject or str
+        :type child: MWDBObject or str
         """
         if not isinstance(child, str):
             child = child.id
         self.api.put("object/{parent}/child/{child}".format(parent=self.id, child=child))
-        if "children" in self.data:
-            del self.data["children"]
+        self._expire("children")
 
     def add_tag(self, tag):
         """
@@ -245,8 +213,7 @@ class MalwarecageObject(MalwarecageElement):
         self.api.put("object/{id}/tag".format(**self.data), json={
             "tag": tag
         })
-        if "tags" in self.data:
-            del self.data["tags"]
+        self._expire("tags")
 
     def remove_tag(self, tag):
         """
@@ -258,8 +225,7 @@ class MalwarecageObject(MalwarecageElement):
         self.api.delete("object/{id}/tag".format(**self.data), params={
             "tag": tag
         })
-        if "tags" in self.data:
-            del self.data["tags"]
+        self._expire("tags")
 
     def add_comment(self, comment):
         """
@@ -271,8 +237,7 @@ class MalwarecageObject(MalwarecageElement):
         self.api.post("object/{id}/comment".format(**self.data), json={
             "comment": comment
         })
-        if "comments" in self.data:
-            del self.data["comments"]
+        self._expire("comments")
 
     def add_metakey(self, key, value):
         """
@@ -287,13 +252,14 @@ class MalwarecageObject(MalwarecageElement):
             "key": key,
             "value": value
         })
+        self._expire("metakeys")
 
     def share_with(self, group):
         """
         Share object with specified group
 
         .. versionadded:: 3.0.0
-           Added :py:meth:`MalwarecageObject.share_with` method
+           Added :py:meth:`MWDBObject.share_with` method
 
         :param group: Group name
         :type group: str
@@ -301,8 +267,7 @@ class MalwarecageObject(MalwarecageElement):
         self.api.put("object/{id}/share".format(**self.data), json={
             "group": group
         })
-        if "shares" in self.data:
-            del self.data["shares"]
+        self._expire("shares")
 
     def flush(self):
         """
@@ -310,3 +275,8 @@ class MalwarecageObject(MalwarecageElement):
         All object-specific properties will be lazy-loaded using API
         """
         self.data = {"id": self.data["id"]}
+
+
+# Backwards compatibility
+MalwarecageElement = MWDBElement
+MalwarecageObject = MWDBObject
