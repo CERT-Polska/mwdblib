@@ -1,58 +1,70 @@
-from .object import MWDBObject, lazy_property
+from .object import MWDBObject
 
 
 class MWDBFile(MWDBObject):
-    URL_PATTERN = "file/{id}"
+    URL_TYPE = "file"
     TYPE = "file"
 
     def __init__(self, *args, **kwargs):
-        self.preloaded_content = None
+        self._content = None
         super(MWDBFile, self).__init__(*args, **kwargs)
 
-    @staticmethod
-    def create(api, data):
-        return MWDBFile(api, data)
-
-    @lazy_property()
+    @property
     def md5(self):
-        return self.data.get("md5")
+        if "md5" not in self.data:
+            self._load()
+        return self.data["md5"]
 
-    @lazy_property()
+    @property
     def sha1(self):
-        return self.data.get("sha1")
+        if "sha1" not in self.data:
+            self._load()
+        return self.data["sha1"]
 
-    @lazy_property()
+    @property
     def sha512(self):
-        return self.data.get("sha512")
+        if "sha512" not in self.data:
+            self._load()
+        return self.data["sha512"]
 
-    @lazy_property()
+    @property
     def crc32(self):
-        return self.data.get("crc32")
+        if "crc32" not in self.data:
+            self._load()
+        return self.data["crc32"]
 
-    @lazy_property()
+    @property
     def ssdeep(self):
-        return self.data.get("ssdeep")
+        if "ssdeep" not in self.data:
+            self._load()
+        return self.data["ssdeep"]
 
-    @lazy_property()
+    @property
     def file_name(self):
         """
         Sample original name
         """
-        return self.data.get("file_name")
+        if "file_name" not in self.data:
+            self._load()
+        return self.data["file_name"]
 
-    @lazy_property()
+    @property
     def file_size(self):
         """
         Sample size in bytes
         """
-        return self.data.get("file_size")
+        if "file_size" not in self.data:
+            self._load()
+        return self.data["file_size"]
 
-    @lazy_property()
+    @property
     def file_type(self):
         """
         Sample type
         """
-        return self.data.get("file_type")
+        if "file_type" not in self.data:
+            self._load()
+        return self.data["file_type"]
 
     @property
     def name(self):
@@ -80,9 +92,26 @@ class MWDBFile(MWDBObject):
         """
         Returns file contents, calling :py:meth:`MWDBFile.download` if contents were not loaded yet
         """
-        if self.preloaded_content is None:
-            self.preloaded_content = self.download()
-        return self.preloaded_content
+        if self._content is None:
+            self._content = self.download()
+        return self._content
+
+    @property
+    def config(self):
+        """
+        Returns latest config related with this object
+
+        :rtype: :class:`MWDBConfig` or None
+        :return: Latest configuration if found
+        """
+        from .config import MWDBConfig
+        if "latest_config" not in self.data:
+            self._load()
+        return (
+            MWDBConfig(self.api, self.data["latest_config"])
+            if self.data["latest_config"] is not None
+            else None
+        )
 
     def download(self):
         """

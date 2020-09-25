@@ -3,8 +3,10 @@ import json
 import warnings
 import time
 
-from .exc import InvalidCredentialsError, NotAuthenticatedError, LimitExceededError, \
-                 BadResponseError, GatewayError, map_http_error
+from .exc import (
+    InvalidCredentialsError, NotAuthenticatedError, LimitExceededError,
+    BadResponseError, GatewayError, map_http_error
+)
 
 try:
     from urlparse import urljoin
@@ -21,6 +23,24 @@ API_URL = "https://mwdb.cert.pl/api/"
 
 
 class APIClient(object):
+    """
+    API object used to talk with a MWDB instance directly.
+
+    :param api_url: MWDB instance URL. Should end with a slash.
+    :param api_key: Optional API key.
+    :param verify_ssl: Should the api verify SSL certificate correctness?
+    :param obey_ratelimiter: If false, HTTP 429 errors will cause an exception like all other error codes.
+        If true (default), library will transparently handle them by sleeping for a specified duration.
+    :param retry_on_downtime: If true, requests will be automatically retried after 10 seconds
+        on HTTP 502/504 and ConnectionError.
+    :param max_downtime_retries: Number of retries caused by temporary downtime
+    :param downtime_timeout: How long we need to wait between retries (in seconds)
+    :param retry_idempotent: Retry idempotent POST requests (default).
+        The only thing that is really non-idempotent in current API is :meth:`MWDBObject.add_comment`,
+        so it's not a big deal. You can turn it off if possible doubled comments
+        are problematic in your MWDB instance.
+    """
+
     def __init__(
         self,
         api_url=API_URL,
@@ -32,28 +52,12 @@ class APIClient(object):
         downtime_timeout=10,
         retry_idempotent=True
     ):
-        """ API object used to talk with a MWDB instance directly.
-
-        :param api_url: MWDB instance URL. Should end with a slash.
-        :param api_key: Optional API key.
-        :param verify_ssl: Should the api verify SSL certificate correctness?
-        :param obey_ratelimiter: If false, HTTP 429 errors will cause an
-        exception like all other error codes. If true (default), library will
-        transparently handle them by sleeping for a specified duration.
-        :param retry_on_downtime: If true, requests will be automatically
-        retried after 10 seconds on HTTP 502/504 and ConnectionError.
-        :param max_downtime_retries: Number of retries caused by temporary downtime
-        :param downtime_timeout: How long we need to wait between retries (in seconds)
-        :param retry_idempotent: Retry idempotent POST requests (default). The only thing
-        that is really non-idempotent in current API is :meth:`MWDBObject.add_comment`,
-        so it's not a big deal. You can turn it off if possible doubled comments
-        are problematic in your MWDB instance.
-        """
         self.api_url = api_url
         if not self.api_url.endswith("/"):
             self.api_url += "/"
-            warnings.warn("APIClient.api_url should end with a trailing slash. "
-                          "Fix your configuration. Missing character was added to the URL.")
+        if not self.api_url.endswith("/api/"):
+            warnings.warn("APIClient.api_url doesn't end with '/api/'. Make sure you have passed"
+                          "URL to the REST API instead of MWDB UI")
         self.api_key = None
         self.logged_user = None
         self.session = requests.Session()
@@ -113,8 +117,8 @@ class APIClient(object):
         # Check if authenticated yet
         if not noauth and self.api_key is None:
             raise NotAuthenticatedError(
-                'API credentials for MWDB were not set, call APIClient.set_api_key or '
-                'MWDB.login first'
+                'API credentials for MWDB were not set, pass api_key parameter '
+                'to MWDB or call MWDB.login first'
             )
 
         # Set method name and request URL
