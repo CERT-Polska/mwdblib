@@ -440,8 +440,7 @@ class Malwarecage(object):
 
     def _count(self, object_type, query=None):
         params = {'query': query}
-        result = self.api.get(object_type.URL_TYPE + '/count', params=params)
-        return result
+        return self.api.get(object_type.URL_TYPE + '/count', params=params)
 
     def count(self, query=None):
         """
