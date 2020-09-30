@@ -15,7 +15,7 @@ except ImportError:
 class TabularFormatter(ObjectFormatter):
     def format_attr_table(self, data):
         term_width, term_height = click.get_terminal_size()
-        table = beautifultable.BeautifulTable(max_width=term_width,
+        table = beautifultable.BeautifulTable(maxwidth=term_width,
                                               default_alignment=beautifultable.ALIGN_LEFT)
         table.set_style(beautifultable.STYLE_NONE)
         for key, formatter, value in data:
@@ -27,15 +27,15 @@ class TabularFormatter(ObjectFormatter):
 
     def format_table(self, headers, widths, row_formatter, rows):
         term_width, term_height = click.get_terminal_size()
-        table = beautifultable.BeautifulTable(max_width=term_width,
+        table = beautifultable.BeautifulTable(maxwidth=term_width,
                                               default_alignment=beautifultable.ALIGN_LEFT)
-        table.column_headers = headers
+        table.columns.header = headers
         sum_width = None
         for width_set in widths:
             column_widths, expandable_index = width_set[:-1], width_set[-1]
             sum_width = sum(column_widths) + 6  # Table characters width
             if term_width > sum_width:
-                table._column_widths = (
+                table.columns.width = (
                         column_widths[:expandable_index] +
                         [term_width - sum_width + column_widths[expandable_index]] +
                         column_widths[expandable_index+1:]
