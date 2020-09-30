@@ -26,7 +26,7 @@ setup(name="mwdblib",
               "click>=7.0",
               "click-default-group",
               "keyring>=18.0.0",
-              "beautifultable>=0.8.0",
+              "beautifultable>=1.0.0",
               "humanize>=0.5.1"
           ]
       },
