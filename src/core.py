@@ -576,7 +576,7 @@ class MWDB(object):
         """
         result = self.api.post("file", files={
             'file': (name, content),
-            'options': json.dumps(self._upload_params(**kwargs))
+            'options': (None, json.dumps(self._upload_params(**kwargs)))
         })
         return MWDBFile(self.api, result)
 
