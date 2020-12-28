@@ -19,6 +19,7 @@ setup(name="mwdblib",
       author="psrok1",
       package_dir={'mwdblib': 'src', 'mwdblib.cli': 'src/cli', 'mwdblib.cli.formatters': 'src/cli/formatters'},
       packages=['mwdblib', 'mwdblib.cli', 'mwdblib.cli.formatters'],
+      package_data={"mwdblib": ["py.typed"]},
       url="https://github.com/CERT-Polska/mwdblib",
       install_requires=open("requirements.txt").read().splitlines(),
       extras_require={
