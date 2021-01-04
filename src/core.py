@@ -193,7 +193,7 @@ class MWDB(object):
                     break
 
                 if obj.upload_time < last_time:
-                    raise Exception(
+                    raise RuntimeError(
                         "Newly fetched object [{}] is older than the pivot [{}]".format(
                             obj.id, last_id
                         )
