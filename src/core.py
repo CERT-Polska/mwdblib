@@ -236,8 +236,8 @@ class MWDB(object):
             do something unusual.
 
             Additionally, if using the ``query`` parameter and passing the ``last_object`` pivot, make sure
-            that the passed object actually matches the query criteria. Otherwise the mechanism that catches faulty pivots
-            will signal that there's something wrong and raise an exception.
+            that the passed object actually matches the query criteria. Otherwise the mechanism that catches faulty
+            pivots will signal that there's something wrong and raise an exception.
 
         .. versionadded:: 3.2.0
             Added listen_for_* methods
@@ -247,7 +247,7 @@ class MWDB(object):
 
         .. versionadded:: 3.4.0
             The listen_for_* methods will now try to prevent you from iterating over the whole database by
-            throwing an exception if they detect that there is something wrong with the pivot object 
+            throwing an exception if they detect that there is something wrong with the pivot object
 
         :param last_object: MWDBObject instance or object hash
         :type last_object: MWDBObject or str
