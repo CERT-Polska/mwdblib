@@ -1,6 +1,5 @@
 import getpass
 import json
-import itertools
 import time
 import warnings
 
@@ -167,28 +166,44 @@ class MWDB(object):
         """
         return self._recent(MWDBBlob)
 
-    def _listen(self, last_object, object_type, blocking=True, interval=15):
+    def _listen(self, last_object, object_type, blocking=True, interval=15, query=None):
         if last_object is None:
-            last_object = next(self._recent(object_type))
+            last_object = next(self._recent(object_type, query=query))
             # If there are no elements (even first element): just get new samples from now on
             if last_object is not None:
                 last_id = last_object.id
+                last_time = last_object.upload_time
         elif isinstance(last_object, MWDBObject):
             # If we are requesting for typed objects, we should additionally check the object type
             if object_type is not MWDBObject and not isinstance(last_object, object_type):
                 raise TypeError("latest_object type must be 'str' or '{}'".format(object_type.__name__))
             # If object instance provided: get ID from instance
             last_id = last_object.id
+            last_time = last_object.upload_time
         else:
             # If not: first check whether object exists in repository
-            last_id = self._query(object_type, last_object, raise_not_found=True).id
+            last_obj = self._query(object_type, last_object, raise_not_found=True)
+            last_id = last_obj.id
+            last_time = last_obj.upload_time
 
         while True:
-            objects = list(itertools.takewhile(lambda el: el.id != last_id,
-                                               self._recent(object_type)))
+            objects = []
+            for obj in self._recent(object_type, query=query):
+                if obj.id == last_id:
+                    break
+
+                if obj.upload_time < last_time:
+                    raise RuntimeError(
+                        "Newly fetched object [{}] is older than the pivot [{}]".format(
+                            obj.id, last_id
+                        )
+                    )
+                objects.append(obj)
+
             # Return fetched objects in reversed order (from oldest to latest)
             for obj in objects[::-1]:
                 last_id = obj.id
+                last_time = obj.upload_time
                 yield obj
             if blocking:
                 time.sleep(interval)
@@ -214,16 +229,25 @@ class MWDB(object):
         - :py:meth:`listen_for_configs`
         - :py:meth:`listen_for_blobs`
 
-        Using this method you need to
-
         .. warning::
             Make sure that last_object is valid in MWDB instance. If you provide MWDBObject that doesn't
             exist, mwdblib will iterate over all objects and you can quickly hit your rate limit. Library is trying to
             protect you from that as much as possible by checking type and object existence, but it's still possible to
             do something unusual.
 
+            Additionally, if using the ``query`` parameter and passing the ``last_object`` pivot, make sure
+            that the passed object actually matches the query criteria. Otherwise the mechanism that catches faulty
+            pivots will signal that there's something wrong and raise an exception.
+
         .. versionadded:: 3.2.0
             Added listen_for_* methods
+
+        .. versionadded:: 3.4.0
+            Added query parameter
+
+        .. versionadded:: 3.4.0
+            The listen_for_* methods will now try to prevent you from iterating over the whole database by
+            throwing an exception if they detect that there is something wrong with the pivot object
 
         :param last_object: MWDBObject instance or object hash
         :type last_object: MWDBObject or str
@@ -231,6 +255,8 @@ class MWDB(object):
         :type blocking: bool, optional
         :param interval: Interval for periodic queries in blocking mode (default is 15 seconds)
         :type interval: int, optional
+        :param query: Lucene query to be used for listening for only specific objects
+        :type query: str, optional
         :rtype: Iterator[:class:`MWDBObject`]
         """
         return self._listen(last_object,
@@ -247,12 +273,21 @@ class MWDB(object):
         .. versionadded:: 3.2.0
             Added listen_for_* methods
 
+        .. versionadded:: 3.4.0
+            Added query parameter
+
+        .. versionadded:: 3.4.0
+            The listen_for_* methods will now try to prevent you from iterating over the whole database by
+            throwing an exception if they detect that there is something wrong with the pivot object
+
         :param last_object: MWDBFile instance or object hash
         :type last_object: MWDBFile or str
         :param blocking: Enable blocking mode (default)
         :type blocking: bool, optional
         :param interval: Interval for periodic queries in blocking mode (default is 15 seconds)
         :type interval: int, optional
+        :param query: Lucene query to be used for listening for only specific files
+        :type query: str, optional
         :rtype: Iterator[:class:`MWDBFile`]
         """
         return self._listen(last_object,
@@ -269,12 +304,21 @@ class MWDB(object):
         .. versionadded:: 3.2.0
             Added listen_for_* methods
 
+        .. versionadded:: 3.4.0
+            Added query parameter
+
+        .. versionadded:: 3.4.0
+            The listen_for_* methods will now try to prevent you from iterating over the whole database by
+            throwing an exception if they detect that there is something wrong with the pivot object
+
         :param last_object: MWDBConfig instance or object hash
         :type last_object: MWDBConfig or str
         :param blocking: Enable blocking mode (default)
         :type blocking: bool, optional
         :param interval: Interval for periodic queries in blocking mode (default is 15 seconds)
         :type interval: int, optional
+        :param query: Lucene query to be used for listening for only specific configs
+        :type query: str, optional
         :rtype: Iterator[:class:`MWDBConfig`]
         """
         return self._listen(last_object,
@@ -291,12 +335,21 @@ class MWDB(object):
         .. versionadded:: 3.2.0
             Added listen_for_* methods
 
+        .. versionadded:: 3.4.0
+            Added query parameter
+
+        .. versionadded:: 3.4.0
+            The listen_for_* methods will now try to prevent you from iterating over the whole database by
+            throwing an exception if they detect that there is something wrong with the pivot object
+
         :param last_object: MWDBBlob instance or object hash
         :type last_object: MWDBBlob or str
         :param blocking: Enable blocking mode (default)
         :type blocking: bool, optional
         :param interval: Interval for periodic queries in blocking mode (default is 15 seconds)
         :type interval: int, optional
+        :param query: Lucene query to be used for listening for only specific blobs
+        :type query: str, optional
         :rtype: Iterator[:class:`MWDBBlob`]
         """
         return self._listen(last_object,
