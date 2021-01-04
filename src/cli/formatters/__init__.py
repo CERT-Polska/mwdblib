@@ -25,7 +25,7 @@ def pass_formatter(fn):
     @functools.wraps(fn)
     @click.option("--output", "-o", default="",
                   help="Format attributes separated by commas. Supported values: nocolor, "
-                       "nopager, nohuman")
+                       "nopager, nohuman, short")
     def wrapper(*args, **kwargs):
         formatter = get_formatter(output_format=kwargs["output"])
         del kwargs["output"]
