@@ -1,6 +1,5 @@
 import getpass
 import json
-import itertools
 import time
 import warnings
 
