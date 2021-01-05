@@ -168,11 +168,13 @@ class MWDB(object):
 
     def _listen(self, last_object, object_type, blocking=True, interval=15, query=None):
         if last_object is None:
-            last_object = next(self._recent(object_type, query=query))
+            last_object = next(self._recent(object_type, query=query), None)
             # If there are no elements (even first element): just get new samples from now on
             if last_object is not None:
                 last_id = last_object.id
                 last_time = last_object.upload_time
+            else:
+                last_id = last_time = None
         elif isinstance(last_object, MWDBObject):
             # If we are requesting for typed objects, we should additionally check the object type
             if object_type is not MWDBObject and not isinstance(last_object, object_type):
@@ -189,10 +191,10 @@ class MWDB(object):
         while True:
             objects = []
             for obj in self._recent(object_type, query=query):
-                if obj.id == last_id:
+                if last_id and obj.id == last_id:
                     break
 
-                if obj.upload_time < last_time:
+                if last_time and obj.upload_time < last_time:
                     raise RuntimeError(
                         "Newly fetched object [{}] is older than the pivot [{}]".format(
                             obj.id, last_id
