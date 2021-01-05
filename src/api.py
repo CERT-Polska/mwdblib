@@ -9,7 +9,7 @@ from .exc import (
 )
 
 try:
-    from urlparse import urljoin
+    from urlparse import urljoin  # type: ignore
 except ImportError:
     from urllib.parse import urljoin
 

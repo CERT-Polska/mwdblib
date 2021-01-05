@@ -515,7 +515,7 @@ class MWDB(object):
             result = mwdb.count_files("tag:evil AND file.size:[0 TO 100000]")
 
         :param query: Query in Lucene syntax
-        :type query: str
+        :type query: str, optional
         :rtype: int
         :raises: requests.exceptions.HTTPError
         """
@@ -526,7 +526,7 @@ class MWDB(object):
         Returns number of files matching provided query in Lucene syntax.
 
         :param query: Query in Lucene syntax
-        :type query: str
+        :type query: str, optional
         :rtype: int
         :raises: requests.exceptions.HTTPError
         """
@@ -537,7 +537,7 @@ class MWDB(object):
         Returns number of configs matching provided query in Lucene syntax.
 
         :param query: Query in Lucene syntax
-        :type query: str
+        :type query: str, optional
         :rtype: int
         :raises: requests.exceptions.HTTPError
         """
@@ -548,7 +548,7 @@ class MWDB(object):
         Returns number of blobs matching provided query in Lucene syntax.
 
         :param query: Query in Lucene syntax
-        :type query: str
+        :type query: str, optional
         :rtype: int
         :raises: requests.exceptions.HTTPError
         """
