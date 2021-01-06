@@ -56,8 +56,7 @@ class MWDB(object):
         .. warning::
 
            Keep in mind that password-authenticated sessions are short lived, so password needs to be stored
-           in :class:`APIClient` object. Ask MWDB instance administrator for an API key (or send e-mail to
-           info@cert.pl if you use mwdb.cert.pl)
+           in :class:`APIClient` object. Consider generating a new API key in your MWDB profile.
 
         .. versionadded:: 2.4.0
            MWDB tries to reauthenticate on first Unauthorized exception
