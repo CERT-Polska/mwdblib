@@ -89,8 +89,7 @@ class APIClient(object):
     def login(self, username, password, warn=True):
         if warn:
             warnings.warn("Password-authenticated sessions are short lived, so password needs to be stored "
-                          "in APIClient object. Ask MWDB instance administrator for an API key "
-                          "(send e-mail to info@cert.pl if you use mwdb.cert.pl)")
+                          "in APIClient object. Consider generating a new API key in your MWDB profile.")
         result = self.post("auth/login", json={
             "login": username,
             "password": password
