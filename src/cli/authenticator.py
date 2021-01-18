@@ -49,12 +49,13 @@ class MwdbAuthenticator(object):
             mwdb.login(warn=False)
         return mwdb
 
-    def store_login(self, username, password, api_key):
+    def store_login(self, username, password, api_key, api_url=None):
         """
         Sets credentials into user configuration file and keyring
         :param username: Username to store
         :param password: Password to store
         :param api_key: API key to store
+        :param api_url: Alternative API url to store
         """
         if api_key is not None:
             api = APIClient(api_key=api_key)
@@ -64,6 +65,9 @@ class MwdbAuthenticator(object):
         else:
             self.set_config("username", username)
             keyring.set_password("mwdb", username, password)
+
+        if api_url is not None:
+            self.set_config("api_url", api_url)
 
     def reset_login(self):
         """
