@@ -34,6 +34,12 @@ If you want, you can also provide your API key instead of storing your password 
 Just copy your API token from `/profile` view and paste into the CLI. All secrets will be stored in `keyring`
 and your username will be saved in `~/.mwdb` file.
 
+.. versionadded:: 3.4.1
+
+If you're using mwdblib to interact with your self-hosted mwdb-core instance, you can now pass the api url using the
+standard --api-url option and it will be automatically saved in the config file.
+
+
 Looking for recent data
 -----------------------
 
