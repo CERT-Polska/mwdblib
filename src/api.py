@@ -80,7 +80,7 @@ class APIClient(object):
         self.api_key = api_key
         if self.api_key is not None:
             try:
-                self.logged_user = json.loads(base64.b64decode(self.api_key.split(".")[1] + "=="))["login"]
+                self.logged_user = json.loads(base64.b64decode(self.api_key.split(".")[1] + "==").decode())["login"]
             except Exception:
                 raise InvalidCredentialsError("Invalid API key format. Verify whether actual token is provided "
                                               "instead of its UUID.")
