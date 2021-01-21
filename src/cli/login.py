@@ -23,10 +23,12 @@ def login_command(ctx, username, password, via_api_key, api_key):
             username = click.prompt("Username")
         if password is None:
             password = click.prompt("Password", hide_input=True)
+
+    api_url = ctx.obj.get("api_url", None)
     authenticator = MwdbAuthenticator()
-    authenticator.store_login(username, password, api_key)
+    authenticator.store_login(username, password, api_key, api_url)
     try:
-        mwdb = authenticator.get_authenticated_mwdb(ctx.obj.get("api_url", None))
+        mwdb = authenticator.get_authenticated_mwdb(api_url)
         # todo: Find more appropriate way to check successful authentication
         mwdb.query("", raise_not_found=False)
     except InvalidCredentialsError:
