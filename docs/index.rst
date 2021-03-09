@@ -3,16 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to mwdblib's documentation!
-===================================
+Welcome to mwdblib's API documentation!
+=======================================
 
-.. toctree::
-   :maxdepth: 3
-   :caption: Basic concepts
-
-   datamodel
-   sharingmodel
-   cmdline
+If you want to learn about mwdblib usage, check out `8. Automating things using REST API and mwdblib in mwdb-core User Guide <https://mwdb.readthedocs.io/en/latest/user-guide/8-REST-and-mwdblib.html>`_.
 
 .. toctree::
    :maxdepth: 2
@@ -22,14 +16,6 @@ Welcome to mwdblib's documentation!
    mwdbtypes
    mwdbsecondary
    mwdbexc
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Usage examples
-
-   getexample
-
 
 Indices and tables
 ==================
