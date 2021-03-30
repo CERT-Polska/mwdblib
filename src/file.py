@@ -124,7 +124,7 @@ class MWDBFile(MWDBObject):
 
         .. code-block:: python
 
-           dropper = next(mwdb.search_file('file.size:[0 TO 1000] AND file.name:"*.vbs"'))
+           dropper = next(mwdb.search_files('file.size:[0 TO 1000] AND file.name:"*.vbs"'))
 
            with open(dropper.file_name, "wb") as f:
                f.write(dropper.download())
