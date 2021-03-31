@@ -21,6 +21,7 @@ setup(name="mwdblib",
       packages=['mwdblib', 'mwdblib.cli', 'mwdblib.cli.formatters'],
       package_data={"mwdblib": ["*.pyi", "py.typed"]},
       url="https://github.com/CERT-Polska/mwdblib",
+      license="MIT",
       install_requires=open("requirements.txt").read().splitlines(),
       extras_require={
           "cli": [
@@ -39,4 +40,5 @@ setup(name="mwdblib",
       classifiers=[
         "Programming Language :: Python",
         "Operating System :: OS Independent",
+        "License :: OSI Approved :: MIT License",
       ])
