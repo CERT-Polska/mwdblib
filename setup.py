@@ -39,4 +39,5 @@ setup(name="mwdblib",
       classifiers=[
         "Programming Language :: Python",
         "Operating System :: OS Independent",
+        "License :: OSI Approved :: MIT License",
       ])
