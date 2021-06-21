@@ -22,8 +22,8 @@ class TabularFormatter(ObjectFormatter):
             key = key + ":"
             if self.colorize:
                 key = click.style(key, bold=True)
-            table.append_row([key, formatter.format(self, value)])
-        return table.get_string()
+            table.rows.append([key, formatter.format(self, value)])
+        return str(table)
 
     def format_table(self, headers, widths, row_formatter, rows):
         term_width, term_height = click.get_terminal_size()
