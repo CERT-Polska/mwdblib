@@ -2,7 +2,7 @@ import click
 
 from . import main
 from .authenticator import MwdbAuthenticator
-from ..exc import InvalidCredentialsError
+from ..exc import InvalidCredentialsError, NotAuthenticatedError
 
 
 @main.command("login")
@@ -28,11 +28,13 @@ def login_command(ctx, username, password, via_api_key, api_key):
     authenticator = MwdbAuthenticator()
     authenticator.store_login(username, password, api_key, api_url)
     try:
+        # Try to use credentials
         mwdb = authenticator.get_authenticated_mwdb(api_url)
-        # todo: Find more appropriate way to check successful authentication
-        mwdb.query("", raise_not_found=False)
-    except InvalidCredentialsError:
-        click.echo("Error: Login failed - invalid credentials.", err=True)
+        if api_key:
+            # Check if API key is correct
+            mwdb.api.get("auth/validate")
+    except (InvalidCredentialsError, NotAuthenticatedError) as e:
+        click.echo("Error: Login failed - {}".format(str(e)), err=True)
         authenticator.reset_login()
         ctx.abort()
 
