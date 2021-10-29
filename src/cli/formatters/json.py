@@ -9,13 +9,13 @@ class JSONFormatter(ObjectFormatter):
             yield json.dumps(obj.data)
 
     def format_file_detailed(self, file):
-        print(json.dumps(file.data))
+        return json.dumps(file.data)
 
     def format_config_detailed(self, config):
-        print(json.dumps(config.data))
+        return json.dumps(config.data)
 
     def format_blob_detailed(self, blob):
-        print(json.dumps(blob.data))
+        return json.dumps(blob.data)
 
     def format_shares_list(self, shares):
         for share in shares:
