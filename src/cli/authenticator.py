@@ -24,10 +24,11 @@ class MwdbAuthenticator(object):
         self.config = configparser.ConfigParser()
         self.config.read(['mwdb.cfg', self.CONFIG_PATH])
 
-    def get_authenticated_mwdb(self, api_url=None):
+    def get_authenticated_mwdb(self, api_url=None, try_login=True):
         """
         Gets pre-authenticated MWDB object based on local configuration
         :param api_url: Alternative API url provided explicitly by user
+        :param try_login: Ask for credentials if they're not saved
         :rtype: MWDB
         """
         api_url = api_url or self.config.get("mwdb", "api_url", fallback=API_URL)
@@ -44,8 +45,8 @@ class MwdbAuthenticator(object):
                 password = keyring.get_password("mwdb", username)
                 api.login(username, password, warn=False)
         mwdb = MWDB(api=api)
-        # If not authenticated: ask for credentials
-        if mwdb.api.api_key is None:
+        # If credentials are not stored and try_login=True: ask for credentials
+        if try_login and mwdb.api.api_key is None:
             mwdb.login(warn=False)
         return mwdb
 
