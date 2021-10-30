@@ -3,12 +3,14 @@ import functools
 
 from .short import ShortFormatter
 from .tabular import TabularFormatter
+from .json import JSONFormatter
 
 
 def get_formatter(output_format):
     formatter_classes = {
         "table": TabularFormatter,
-        "short": ShortFormatter
+        "short": ShortFormatter,
+        "json": JSONFormatter,
     }
     output_format = output_format.lstrip("=").split(",")
     formatter_class = TabularFormatter
@@ -25,7 +27,7 @@ def pass_formatter(fn):
     @functools.wraps(fn)
     @click.option("--output", "-o", default="",
                   help="Format attributes separated by commas. Supported values: nocolor, "
-                       "nopager, nohuman, short")
+                       "nopager, nohuman, short, json")
     def wrapper(*args, **kwargs):
         formatter = get_formatter(output_format=kwargs["output"])
         del kwargs["output"]
