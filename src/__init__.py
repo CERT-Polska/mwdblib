@@ -15,6 +15,7 @@ __all__ = [
     'MWDBObject',
     'MWDBConfig',
     'MWDBBlob',
+    'MWDBComment',
     '__version__',
     "config_dhash"
 ]
