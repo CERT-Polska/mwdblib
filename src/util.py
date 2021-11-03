@@ -1,15 +1,9 @@
 import hashlib
-import sys
 
 
 def convert_to_utf8(obj):
-    """Encodes object into utf-8 bytes (or 'str' in Py2)"""
-    obj = str(obj)
-    if sys.version_info[0] == 3:
-        obj = bytes(obj, "utf-8")
-    else:
-        obj = u''.join(map(unichr, map(ord, obj))).encode("utf-8")  # noqa: F821 in Py3 context
-    return obj
+    """Encodes object into utf-8 bytes"""
+    return bytes(str(obj), "utf-8")
 
 
 def _eval_config_dhash(obj):

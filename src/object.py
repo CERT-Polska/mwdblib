@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 
-class MWDBElement(object):
+class MWDBElement:
     def __init__(self, api, data):
         self.api = api
         self.data = dict(data)
@@ -31,7 +31,7 @@ class MWDBObject(MWDBElement):
     def _load(self, url_pattern=None, mapper=None):
         if url_pattern is None:
             url_pattern = self.URL_TYPE + "/{id}"
-        return super(MWDBObject, self)._load(url_pattern, mapper=mapper)
+        return super()._load(url_pattern, mapper=mapper)
 
     @staticmethod
     def create(api, data):

@@ -10,12 +10,6 @@ from .file import MWDBFile
 from .config import MWDBConfig
 from .blob import MWDBBlob
 
-try:
-    import __builtin__
-    user_input = getattr(__builtin__, "raw_input")
-except ImportError:
-    user_input = input
-
 
 class MWDB(object):
     """
@@ -80,8 +74,7 @@ class MWDB(object):
             warnings.warn("login() will reset the previously set API key. If you really want to reauthenticate, "
                           "call logout() before to suppress this warning.")
         if username is None:
-            # Py2 compatibility
-            username = user_input("Username: ")
+            username = input("Username: ")
         if password is None:
             password = getpass.getpass("Password: ")
         self.api.login(username, password, warn=warn)

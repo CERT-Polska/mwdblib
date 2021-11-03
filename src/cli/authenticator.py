@@ -11,7 +11,7 @@ from ..core import MWDB
 from ..exc import MWDBError
 
 
-class MwdbAuthenticator(object):
+class MwdbAuthenticator:
     CONFIG_PATH = os.path.expanduser("~/.mwdb")
     CONFIG_FIELDS = [
         "username",
