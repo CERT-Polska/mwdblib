@@ -1,7 +1,7 @@
 from .object import MWDBElement, MWDBObject
 
 
-class MWDBShareReason(object):
+class MWDBShareReason:
     """
     Represents the reason why object was shared with specified group
     """

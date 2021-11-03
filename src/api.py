@@ -22,7 +22,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 API_URL = "https://mwdb.cert.pl/api/"
 
 
-class APIClient(object):
+class APIClient:
     """
     API object used to talk with a MWDB instance directly.
 

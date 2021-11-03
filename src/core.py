@@ -11,7 +11,7 @@ from .config import MWDBConfig
 from .blob import MWDBBlob
 
 
-class MWDB(object):
+class MWDB:
     """
     Main object used for communication with MWDB REST API
 
