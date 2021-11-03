@@ -6,7 +6,7 @@ class MWDBComment(MWDBElement):
     Represents comment for MWDB object
     """
     def __init__(self, api, data, parent):
-        super(MWDBComment, self).__init__(api, data)
+        super().__init__(api, data)
         self.parent = parent
 
     @property

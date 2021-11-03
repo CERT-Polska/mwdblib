@@ -14,7 +14,7 @@ class MWDBError(RuntimeError):
         self.http_error = http_error
         if message is None and http_error is not None:
             message = get_http_error_message(http_error)
-        super(MWDBError, self).__init__(message)
+        super().__init__(message)
 
 
 class AuthError(MWDBError):

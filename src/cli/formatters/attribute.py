@@ -2,7 +2,7 @@ import click
 import humanize
 
 
-class AttributeFormatter(object):
+class AttributeFormatter:
     def format(self, formatter, value):
         return value
 

@@ -5,12 +5,6 @@ from .abstract import ObjectFormatter
 from .attribute import AttributeFormatter, BoldFormatter, TagFormatter, SizeFormatter, DateFormatter, \
     ObjectTypeFormatter, RelationTagFormatter
 
-try:
-    from itertools import imap
-except ImportError:
-    # Python 3
-    imap = map
-
 
 class TabularFormatter(ObjectFormatter):
     def format_attr_table(self, data):
@@ -43,7 +37,7 @@ class TabularFormatter(ObjectFormatter):
                 break
         else:
             raise RuntimeError("Terminal is too narrow (needed {}, got {})".format(sum_width, term_width))
-        for lines in table.stream(imap(row_formatter, rows)):
+        for lines in table.stream(map(row_formatter, rows)):
             for line in lines.splitlines():
                 yield line + "\n"
 

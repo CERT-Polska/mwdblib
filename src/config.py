@@ -1,3 +1,4 @@
+import json
 from .object import MWDBObject
 
 
@@ -57,12 +58,7 @@ class MWDBConfig(MWDBObject):
 
         :rtype: bytes
         """
-        import json
-        content = json.dumps(self.config_dict, indent=4)
-        # Py2/Py3 compatibility
-        if not isinstance(content, bytes):
-            content = content.encode("utf-8")
-        return content
+        return json.dumps(self.config_dict, indent=4).encode()
 
     @property
     def cfg(self):

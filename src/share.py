@@ -1,7 +1,7 @@
 from .object import MWDBElement, MWDBObject
 
 
-class MWDBShareReason(object):
+class MWDBShareReason:
     """
     Represents the reason why object was shared with specified group
     """
@@ -57,7 +57,7 @@ class MWDBShare(MWDBElement):
     Represents share entry in MWDB object
     """
     def __init__(self, api, data, parent):
-        super(MWDBShare, self).__init__(api, data)
+        super().__init__(api, data)
         self.parent = parent
 
     @property

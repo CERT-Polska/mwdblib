@@ -2,7 +2,7 @@ import click
 import itertools
 
 
-class ObjectFormatter(object):
+class ObjectFormatter:
     def __init__(self, humanize=True, colorize=True, pager=True):
         self.humanize = humanize
         self.colorize = colorize
