@@ -25,6 +25,3 @@ class MWDBBlob(MWDBObject):
     def config(self) -> Optional[MWDBConfig]: ...
     @property
     def last_seen(self) -> datetime: ...
-
-
-MalwarecageBlob = MWDBBlob

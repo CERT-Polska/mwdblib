@@ -275,8 +275,3 @@ class MWDBObject(MWDBElement):
         All object-specific properties will be lazy-loaded using API
         """
         self.data = {"id": self.data["id"]}
-
-
-# Backwards compatibility
-MalwarecageElement = MWDBElement
-MalwarecageObject = MWDBObject

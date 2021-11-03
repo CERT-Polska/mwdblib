@@ -89,8 +89,3 @@ class MWDBShare(MWDBElement):
         :rtype: :class:`MWDBShareReason`
         """
         return MWDBShareReason(self.api, self.data)
-
-
-# Backwards compatibility
-MalwarecageShareReason = MWDBShareReason
-MalwarecageShare = MWDBShare

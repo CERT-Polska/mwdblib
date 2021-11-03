@@ -133,7 +133,3 @@ class MWDBFile(MWDBObject):
         """
         token = self.api.post("request/sample/{id}".format(**self.data))["url"].split("/")[-1]
         return self.api.get("download/{}".format(token), raw=True)
-
-
-# Backwards compatibility
-MalwarecageFile = MWDBFile

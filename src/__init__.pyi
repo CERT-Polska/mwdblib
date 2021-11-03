@@ -1,8 +1,9 @@
-from .api import APIClient as APIClient, MalwarecageAPI as MalwarecageAPI
-from .blob import MWDBBlob as MWDBBlob, MalwarecageBlob as MalwarecageBlob
-from .config import MWDBConfig as MWDBConfig, MalwarecageConfig as MalwarecageConfig
-from .core import MWDB as MWDB, Malwarecage as Malwarecage
-from .file import MWDBFile as MWDBFile, MalwarecageFile as MalwarecageFile
-from .object import MWDBObject as MWDBObject, MalwarecageObject as MalwarecageObject
-from .util import config_dhash as config_dhash
+from .__version__ import __version__
+from .api import APIClient
+from .blob import MWDBBlob
 from .comment import MWDBComment
+from .config import MWDBConfig
+from .core import MWDB
+from .file import MWDBFile
+from .object import MWDBObject
+from .util import config_dhash

@@ -494,7 +494,9 @@ class MWDB:
 
         .. code-block:: python
 
-            from mwdblib import Malwarecage
+            from mwdblib import MWDB
+
+            mwdb = MWDB()
 
             # Count samples tagged as evil and with size less than 100kB
             result = mwdb.count_files("tag:evil AND file.size:[0 TO 100000]")
@@ -698,7 +700,3 @@ class MWDB:
         params.update(self._upload_params(**kwargs))
         result = self.api.post("blob", json=params)
         return MWDBBlob(self.api, result)
-
-
-# Backwards compatibility
-Malwarecage = MWDB

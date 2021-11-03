@@ -1,19 +1,20 @@
 from .__version__ import __version__
-from .core import MWDB, Malwarecage
-from .api import APIClient, MalwarecageAPI
-from .file import MWDBFile, MalwarecageFile
-from .object import MWDBObject, MalwarecageObject
-from .config import MWDBConfig, MalwarecageConfig
-from .blob import MWDBBlob, MalwarecageBlob
+from .api import APIClient
+from .blob import MWDBBlob
+from .comment import MWDBComment
+from .config import MWDBConfig
+from .core import MWDB
+from .file import MWDBFile
+from .object import MWDBObject
 from .util import config_dhash
 
 __all__ = [
-    'MWDB', 'Malwarecage',
-    'APIClient', 'MalwarecageAPI',
-    'MWDBFile', 'MalwarecageFile',
-    'MWDBObject', 'MalwarecageObject',
-    'MWDBConfig', 'MalwarecageConfig',
-    'MWDBBlob', 'MalwarecageBlob',
+    'MWDB',
+    'APIClient',
+    'MWDBFile',
+    'MWDBObject',
+    'MWDBConfig',
+    'MWDBBlob',
     '__version__',
     "config_dhash"
 ]

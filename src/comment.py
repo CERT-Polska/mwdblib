@@ -51,7 +51,3 @@ class MWDBComment(MWDBElement):
         :raises: requests.exceptions.HTTPError
         """
         self.api.delete("object/{}/comment/{}".format(self.parent.id, self.id))
-
-
-# Backwards compatibility
-MalwarecageComment = MWDBComment
