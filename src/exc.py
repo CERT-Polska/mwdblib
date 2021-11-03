@@ -172,7 +172,3 @@ def map_http_error(http_error):
         return GatewayError(http_error=http_error)
     elif http_error.response.status_code >= 500:
         return InternalError(http_error=http_error)
-
-
-# Backwards compatibility
-MalwarecageError = MWDBError

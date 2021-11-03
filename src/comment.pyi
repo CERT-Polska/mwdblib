@@ -15,6 +15,3 @@ class MWDBComment(MWDBElement):
     @property
     def comment(self) -> str: ...
     def delete(self) -> None: ...
-
-
-MalwarecageComment = MWDBComment

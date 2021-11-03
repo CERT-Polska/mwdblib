@@ -34,6 +34,3 @@ class MWDBFile(MWDBObject):
     @property
     def config(self) -> Optional[MWDBConfig]: ...
     def download(self) -> bytes: ...
-
-
-MalwarecageFile = MWDBFile

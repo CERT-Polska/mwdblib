@@ -93,7 +93,3 @@ class MWDBBlob(MWDBObject):
         if "last_seen" not in self.data:
             self._load()
         return dateutil.parser.parse(self.data["last_seen"])
-
-
-# Backwards compatibility
-MalwarecageBlob = MWDBBlob

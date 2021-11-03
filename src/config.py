@@ -68,7 +68,3 @@ class MWDBConfig(MWDBObject):
         .. seealso:: :py:attr:`config_dict`
         """
         return self.config
-
-
-# Backwards compatibility
-MalwarecageConfig = MWDBConfig

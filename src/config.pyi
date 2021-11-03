@@ -17,6 +17,3 @@ class MWDBConfig(MWDBObject):
     def content(self) -> bytes: ...
     @property
     def cfg(self) -> Dict[str, Any]: ...
-
-
-MalwarecageConfig = MWDBConfig

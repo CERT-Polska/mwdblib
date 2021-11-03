@@ -187,7 +187,3 @@ class APIClient:
 
     def delete(self, *args, **kwargs):
         return self.request("delete", *args, **kwargs)
-
-
-# Backwards compatibility
-MalwarecageAPI = APIClient
