@@ -1,7 +1,6 @@
 import click
 
-from . import main
-from .authenticator import MwdbAuthenticator
+from .main import main, pass_mwdb
 from ..exc import InvalidCredentialsError, NotAuthenticatedError
 
 
@@ -13,8 +12,9 @@ from ..exc import InvalidCredentialsError, NotAuthenticatedError
 @click.option("--via-api-key", "-A", is_flag=True)
 @click.option("--api-key", "-a", type=str, default=None,
               help="API key token (default: password-based authentication)")
+@pass_mwdb
 @click.pass_context
-def login_command(ctx, username, password, via_api_key, api_key):
+def login_command(ctx, mwdb, username, password, via_api_key, api_key):
     """Setup credentials for MWDB authentication"""
     if via_api_key:
         api_key = click.prompt("Provide your API key token", hide_input=True)
@@ -24,23 +24,22 @@ def login_command(ctx, username, password, via_api_key, api_key):
         if password is None:
             password = click.prompt("Password", hide_input=True)
 
-    api_url = ctx.obj.get("api_url", None)
-    authenticator = MwdbAuthenticator()
-    authenticator.store_login(username, password, api_key, api_url)
     try:
         # Try to use credentials
-        mwdb = authenticator.get_authenticated_mwdb(api_url)
-        if api_key:
+        if api_key is None:
+            mwdb.login(username, password)
+        else:
             # Check if API key is correct
+            mwdb.set_api_key(api_key)
             mwdb.api.get("auth/validate")
     except (InvalidCredentialsError, NotAuthenticatedError) as e:
         click.echo("Error: Login failed - {}".format(str(e)), err=True)
-        authenticator.reset_login()
         ctx.abort()
+    mwdb.api.options.store_credentials()
 
 
 @main.command("logout")
-def logout_command():
+@pass_mwdb
+def logout_command(mwdb):
     """Reset stored credentials"""
-    authenticator = MwdbAuthenticator()
-    authenticator.reset_login()
+    mwdb.api.options.clear_stored_credentials()
