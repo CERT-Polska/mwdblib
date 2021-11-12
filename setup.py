@@ -24,6 +24,7 @@ setup(name="mwdblib",
       packages=['mwdblib', 'mwdblib.api', 'mwdblib.cli', 'mwdblib.cli.formatters'],
       package_data={"mwdblib": ["*.pyi", "py.typed"]},
       url="https://github.com/CERT-Polska/mwdblib",
+      python_requires='>=3.6',
       install_requires=[
           "requests",
           "python-dateutil",
@@ -43,7 +44,7 @@ setup(name="mwdblib",
           ]
       },
       classifiers=[
-        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
         "License :: OSI Approved :: MIT License",
       ])
