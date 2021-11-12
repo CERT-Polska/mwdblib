@@ -16,13 +16,13 @@ from ..exc import (
 from .options import APIClientOptions
 
 
-class JWTAuthKey:
+class JWTAuthToken:
     def __init__(self, value: str) -> None:
         self.value = value
         try:
             header, payload, signature = value.split(".")
-            self.header = json.loads(base64.b64decode(header))
-            self.payload = json.loads(base64.b64decode(payload))
+            self.header = json.loads(base64.b64decode(header + "=="))
+            self.payload = json.loads(base64.b64decode(payload + "=="))
         except ValueError:
             raise InvalidCredentialsError("Invalid authentication token. Verify whether actual token is provided "
                                           "instead of its UUID.")
@@ -43,24 +43,18 @@ class APIClient:
     """
     Client for MWDB REST API that performs authentication and low-level API request/response handling
     """
-    def __init__(self, _auth_key=None, **api_options):
+    def __init__(self, _auth_token=None, **api_options):
         self.options = APIClientOptions(**api_options)
-        self._server_metadata = {}
-
-        self.api_url = self.options.api_url
-        if not self.api_url.endswith("/"):
-            self.api_url += "/"
-        if not self.api_url.endswith("/api/") and self.options.emit_warnings:
-            warnings.warn("APIClient.api_url doesn't end with '/api/'. Make sure you have passed"
-                          "URL to the REST API instead of MWDB UI")
+        self.auth_token = None
+        self._server_metadata = None
 
         self.session = requests.Session()
 
         from .. import __version__
         self.session.headers['User-Agent'] = "mwdblib/{} ".format(__version__) + self.session.headers['User-Agent']
 
-        if _auth_key:
-            self.set_auth_key(_auth_key)
+        if _auth_token:
+            self.set_auth_token(_auth_token)
         if self.options.api_key:
             self.set_api_key(self.options.api_key)
         elif self.options.username and self.options.password:
@@ -69,7 +63,7 @@ class APIClient:
     @property
     def server_metadata(self):
         if self._server_metadata is None:
-            self._server_metadata = self.get("server")
+            self._server_metadata = self.get("server", noauth=True)
         return self._server_metadata
 
     @property
@@ -78,29 +72,29 @@ class APIClient:
 
     @property
     def logged_user(self):
-        return self.auth_key and self.auth_key.username
+        return self.auth_token and self.auth_token.username
 
-    def set_auth_key(self, auth_key):
-        self.auth_key = JWTAuthKey(auth_key)
-        self.session.headers.update({'Authorization': f'Bearer {self.auth_key}'})
+    def set_auth_token(self, auth_key):
+        self.auth_token = JWTAuthToken(auth_key)
+        self.session.headers.update({'Authorization': f'Bearer {self.auth_token.value}'})
 
     def login(self, username, password):
-        auth_key = self.post("auth/login", json={
+        token = self.post("auth/login", json={
             "login": username,
             "password": password
         }, noauth=True)["token"]
-        self.set_auth_key(auth_key)
+        self.set_auth_token(token)
         # Store credentials in API options
         self.options.username = username
         self.options.password = password
 
     def set_api_key(self, api_key):
-        self.set_auth_key(api_key)
+        self.set_auth_token(api_key)
         # Store credentials in API options
         self.options.api_key = api_key
 
     def logout(self):
-        self.auth_key = None
+        self.auth_token = None
         self.session.headers.pop("Authorization")
 
     def perform_request(self, method, url, *args, **kwargs):
@@ -116,14 +110,14 @@ class APIClient:
 
     def request(self, method, url, noauth=False, raw=False, *args, **kwargs):
         # Check if authenticated
-        if not noauth and self.auth_key is None:
+        if not noauth and self.auth_token is None:
             raise NotAuthenticatedError(
                 'API credentials for MWDB were not set, pass api_key parameter '
                 'to MWDB or call MWDB.login first'
             )
 
         # Set method name and request URL
-        url = urljoin(self.api_url, url)
+        url = urljoin(self.options.api_url, url)
         # Pass verify_ssl setting to requests kwargs
         kwargs["verify"] = self.options.verify_ssl
 

@@ -1,7 +1,6 @@
 import getpass
 import json
 import time
-import warnings
 
 from .api import APIClient
 from .exc import ObjectNotFoundError, ValidationError

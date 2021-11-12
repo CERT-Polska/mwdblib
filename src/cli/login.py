@@ -29,7 +29,7 @@ def login_command(ctx, mwdb, username, password, via_api_key, api_key):
         if api_key is None:
             mwdb.login(username, password)
         else:
-            # Check if API key is correct
+            # Set API key and check if it's correct
             mwdb.set_api_key(api_key)
             mwdb.api.get("auth/validate")
     except (InvalidCredentialsError, NotAuthenticatedError) as e:

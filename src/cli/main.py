@@ -40,3 +40,10 @@ def main(ctx, api_url, config_path):
 def version():
     """Prints mwdblib version"""
     click.echo(__version__)
+
+
+@main.command("server")
+@pass_mwdb
+def server(mwdb):
+    """Prints current server URL and version"""
+    click.echo(f"{mwdb.api.api_url} ({mwdb.api.server_version})")
