@@ -45,7 +45,10 @@ class MWDB:
        requests in case of HTTP 502/504 or ConnectionError.
 
     .. versionadded:: 4.0.0
-       Credentials are fetched from configuration and keyring.
+
+       MWDB() by default uses credentials and api_url set by `mwdb login`.
+       If you don't want to automatically fetch them from configuration,
+       pass `config_path=None` to the constructor
 
        Added `use_keyring`, `emit_warnings` and `config_path` options.
 
