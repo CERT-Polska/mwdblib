@@ -4,6 +4,7 @@ import json
 import warnings
 import time
 
+from typing import Any, Optional
 from urllib.parse import urljoin
 
 import requests
@@ -18,7 +19,7 @@ from .options import APIClientOptions
 
 class JWTAuthToken:
     def __init__(self, value: str) -> None:
-        self.value = value
+        self.value: str = value
         try:
             header, payload, signature = value.split(".")
             self.header = json.loads(base64.b64decode(header + "=="))
@@ -32,25 +33,25 @@ class JWTAuthToken:
         if "exp" not in self.header:
             # No expiration time set
             return False
-        return datetime.datetime.utcnow().timestamp() >= self.header["exp"]
+        return bool(datetime.datetime.utcnow().timestamp() >= self.header["exp"])
 
     @property
     def username(self) -> str:
-        return self.payload["login"]
+        return str(self.payload["login"])
 
 
 class APIClient:
     """
     Client for MWDB REST API that performs authentication and low-level API request/response handling
     """
-    def __init__(self, _auth_token=None, **api_options):
-        self.options = APIClientOptions(**api_options)
-        self.auth_token = None
-        self._server_metadata = None
+    def __init__(self, _auth_token: Optional[str] = None, **api_options: Any) -> None:
+        self.options: APIClientOptions = APIClientOptions(**api_options)
+        self.auth_token: Optional[JWTAuthToken] = None
+        self._server_metadata: Optional[dict] = None
 
-        self.session = requests.Session()
+        self.session: requests.Session = requests.Session()
 
-        from .. import __version__
+        from ..__version__ import __version__
         self.session.headers['User-Agent'] = "mwdblib/{} ".format(__version__) + self.session.headers['User-Agent']
 
         if _auth_token:
@@ -61,24 +62,24 @@ class APIClient:
             self.login(self.options.username, self.options.password)
 
     @property
-    def server_metadata(self):
+    def server_metadata(self) -> dict:
         if self._server_metadata is None:
             self._server_metadata = self.get("server", noauth=True)
         return self._server_metadata
 
     @property
-    def server_version(self):
-        return self.server_metadata["server_version"]
+    def server_version(self) -> str:
+        return str(self.server_metadata["server_version"])
 
     @property
-    def logged_user(self):
-        return self.auth_token and self.auth_token.username
+    def logged_user(self) -> Optional[str]:
+        return self.auth_token.username if self.auth_token else None
 
-    def set_auth_token(self, auth_key):
+    def set_auth_token(self, auth_key: str) -> None:
         self.auth_token = JWTAuthToken(auth_key)
         self.session.headers.update({'Authorization': f'Bearer {self.auth_token.value}'})
 
-    def login(self, username, password):
+    def login(self, username: str, password: str) -> None:
         token = self.post("auth/login", json={
             "login": username,
             "password": password
@@ -88,16 +89,16 @@ class APIClient:
         self.options.username = username
         self.options.password = password
 
-    def set_api_key(self, api_key):
+    def set_api_key(self, api_key: str) -> None:
         self.set_auth_token(api_key)
         # Store credentials in API options
         self.options.api_key = api_key
 
-    def logout(self):
+    def logout(self) -> None:
         self.auth_token = None
         self.session.headers.pop("Authorization")
 
-    def perform_request(self, method, url, *args, **kwargs):
+    def perform_request(self, method: str, url: str, *args: Any, **kwargs: Any) -> requests.models.Response:
         try:
             response = self.session.request(method, url, *args, **kwargs)
             response.raise_for_status()
@@ -108,7 +109,7 @@ class APIClient:
                 raise
             raise mapped_error
 
-    def request(self, method, url, noauth=False, raw=False, *args, **kwargs):
+    def request(self, method: str, url: str, noauth: bool = False, raw: bool = False, *args: Any, **kwargs: Any) -> Any:
         # Check if authenticated
         if not noauth and self.auth_token is None:
             raise NotAuthenticatedError(
@@ -169,14 +170,14 @@ class APIClient:
                 time.sleep(downtime_timeout)
                 # Retry failed request...
 
-    def get(self, *args, **kwargs):
+    def get(self, *args: Any, **kwargs: Any) -> Any:
         return self.request("get", *args, **kwargs)
 
-    def post(self, *args, **kwargs):
+    def post(self, *args: Any, **kwargs: Any) -> Any:
         return self.request("post", *args, **kwargs)
 
-    def put(self, *args, **kwargs):
+    def put(self, *args: Any, **kwargs: Any) -> Any:
         return self.request("put", *args, **kwargs)
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args: Any, **kwargs: Any) -> Any:
         return self.request("delete", *args, **kwargs)

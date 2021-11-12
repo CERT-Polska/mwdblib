@@ -4,17 +4,20 @@ import keyring.errors
 import pathlib
 import warnings
 
+from typing import Any, Optional, Type
+
 
 class OptionsField:
-    def __init__(self, default_value=None, value_type=None):
-        self.default_value = default_value
-        self.nullable = default_value is None
-        self.value_type = value_type or type(default_value)
+    def __init__(self, default_value: Any = None, value_type: Optional[Type] = None) -> None:
+        self.default_value: Any = default_value
+        self.nullable: bool = default_value is None
+        self.value_type: Type = value_type or type(default_value)
 
-    def load_from_config(self, instance, config_parser, section):
+    def load_from_config(self, instance: Any, config_parser: configparser.ConfigParser, section: str) -> None:
         """
         Loads value from configuration and overrides field if value is set.
         """
+        value: Optional[Any]
         if self.value_type is bool:
             value = config_parser.getboolean(section, self.name, fallback=None)
         elif self.value_type is int:
@@ -24,23 +27,23 @@ class OptionsField:
         if value is not None:
             self.__set__(instance, value)
 
-    def load_from_dict(self, instance, dictionary):
+    def load_from_dict(self, instance: Any, dictionary: dict) -> None:
         """
         Loads value from dictionary if set. Accepts None.
         """
         if self.name in dictionary:
             self.__set__(instance, dictionary[self.name])
 
-    def __set_name__(self, owner, name):
+    def __set_name__(self, owner: Any, name: str) -> None:
         self.name = name
         self.instance_name = "_" + name
 
-    def __get__(self, instance, owner):
+    def __get__(self, instance: Any, owner: Any) -> Any:
         if hasattr(instance, self.instance_name):
             return getattr(instance, self.instance_name)
         return self.default_value
 
-    def __set__(self, instance, value):
+    def __set__(self, instance: Any, value: Any) -> None:
         if not (self.nullable and value is None) and type(value) is not self.value_type:
             raise TypeError(f"Expected '{self.name}' to be {self.value_type} not {type(value)}")
         setattr(instance, self.instance_name, value)
@@ -74,11 +77,11 @@ class APIClientOptions:
     # - instance configuration section [mwdb:<api_url>]
     # - api_options keyword arguments
 
-    def __init__(self, config_path=(pathlib.Path.home() / ".mwdb"), **api_options):
-        self.config_parser = configparser.ConfigParser()
+    def __init__(self, config_path: Optional[pathlib.Path] = (pathlib.Path.home() / ".mwdb"), **api_options: Any) -> None:
+        self.config_parser: configparser.ConfigParser = configparser.ConfigParser()
         if config_path is not None:
             # Ensure that config_path is Path object
-            self.config_path = pathlib.Path(config_path)
+            self.config_path: Optional[pathlib.Path] = pathlib.Path(config_path)
             # Read configuration from provided path or do nothing if doesn't exist
             self.config_parser.read([self.config_path])
         else:
@@ -117,7 +120,7 @@ class APIClientOptions:
             if self.api_key is None:
                 self.password = keyring.get_password(f"mwdb:{self.api_url}", self.username)
 
-    def clear_stored_credentials(self, config_writeback=True):
+    def clear_stored_credentials(self, config_writeback: bool = True) -> None:
         """
         Clears stored credentials in configuration for current user
         Used by `mwdb logout` CLI command
@@ -143,11 +146,11 @@ class APIClientOptions:
                 self.config_parser.remove_option(instance_section, "password")
             if self.config_parser.has_option(instance_section, "api_key"):
                 self.config_parser.remove_option(instance_section, "api_key")
-            if config_writeback:
+            if config_writeback and self.config_path:
                 with self.config_path.open("w") as f:
                     self.config_parser.write(f)
 
-    def store_credentials(self):
+    def store_credentials(self) -> None:
         """
         Stores current credentials in configuration for current user
         Used by `mwdb login` CLI command
@@ -178,5 +181,6 @@ class APIClientOptions:
             else:
                 self.config_parser.set(instance_section, "password", self.password)
         # Perform configuration writeback
-        with self.config_path.open("w") as f:
-            self.config_parser.write(f)
+        if self.config_path:
+            with self.config_path.open("w") as f:
+                self.config_parser.write(f)
