@@ -34,7 +34,7 @@ class MWDB:
     :param emit_warnings: If true (default), warnings are emitted by APIClient
     :param config_path: Path to the configuration file (default is `~/.mwdb`).
         If None, configuration file will not be used by APIClient
-    :param api: Custom :class:`APIClient` used to communicate with MWDB
+    :param api: Custom :class:`APIClient` to be used for communication with MWDB
     :type api: :class:`mwdblib.APIClient`, optional
 
     .. versionadded:: 2.6.0
@@ -69,6 +69,17 @@ class MWDB:
 
     def __init__(self, api=None, **api_options):
         self.api = api or APIClient(**api_options)
+
+    @property
+    def options(self):
+        """
+        Returns object with current configuration of MWDB client
+
+        .. versionadded:: 4.0.0
+
+            Added MWDB.options property.
+        """
+        return self.api.options
 
     def login(self, username=None, password=None):
         """
