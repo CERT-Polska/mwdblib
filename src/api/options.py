@@ -77,7 +77,9 @@ class APIClientOptions:
     # - instance configuration section [mwdb:<api_url>]
     # - api_options keyword arguments
 
-    def __init__(self, config_path: Optional[pathlib.Path] = (pathlib.Path.home() / ".mwdb"), **api_options: Any) -> None:
+    def __init__(
+        self, config_path: Optional[pathlib.Path] = (pathlib.Path.home() / ".mwdb"), **api_options: Any
+    ) -> None:
         self.config_parser: configparser.ConfigParser = configparser.ConfigParser()
         if config_path is not None:
             # Ensure that config_path is Path object

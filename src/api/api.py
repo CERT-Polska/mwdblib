@@ -42,7 +42,17 @@ class JWTAuthToken:
 
 class APIClient:
     """
-    Client for MWDB REST API that performs authentication and low-level API request/response handling
+    Client for MWDB REST API that performs authentication and low-level API request/response handling.
+
+    If you want to send arbitrary request to MWDB API, use :py:meth:`get`, :py:meth:`post`, :py:meth:`put`
+    and :py:meth:`delete` methods using ``MWDB.api`` property.
+
+    .. code-block:: python
+
+        mwdb = MWDB()
+        ...
+        # Deletes object with given sha256
+        mwdb.api.delete(f'object/{sha256}')
     """
     def __init__(self, _auth_token: Optional[str] = None, **api_options: Any) -> None:
         self.options: APIClientOptions = APIClientOptions(**api_options)
@@ -110,6 +120,16 @@ class APIClient:
             raise mapped_error
 
     def request(self, method: str, url: str, noauth: bool = False, raw: bool = False, *args: Any, **kwargs: Any) -> Any:
+        """
+        Sends request to MWDB API.
+
+        Other keyword arguments are the same as in requests library.
+
+        :param method: HTTP method
+        :param url: Relative url of API endpoint
+        :param noauth: Don't check if user is authenticated before sending request (default: False)
+        :param raw: Return raw response bytes instead of parsed JSON (default: False)
+        """
         # Check if authenticated
         if not noauth and self.auth_token is None:
             raise NotAuthenticatedError(
