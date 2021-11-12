@@ -8,7 +8,7 @@ import warnings
 class OptionsField:
     def __init__(self, default_value=None, value_type=None):
         self.default_value = default_value
-        self.nullable = default_value is not None
+        self.nullable = default_value is None
         self.value_type = value_type or type(default_value)
 
     def load_from_config(self, instance, config_parser, section):
@@ -41,9 +41,7 @@ class OptionsField:
         return self.default_value
 
     def __set__(self, instance, value):
-        if not self.nullable and value is None:
-            raise ValueError(f"'{self.name}' can't be set to None")
-        if type(value) is not self.value_type:
+        if not (self.nullable and value is None) and type(value) is not self.value_type:
             raise TypeError(f"Expected '{self.name}' to be {self.value_type} not {type(value)}")
         setattr(instance, self.instance_name, value)
 

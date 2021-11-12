@@ -46,4 +46,4 @@ def version():
 @pass_mwdb
 def server(mwdb):
     """Prints current server URL and version"""
-    click.echo(f"{mwdb.api.api_url} ({mwdb.api.server_version})")
+    click.echo(f"{mwdb.api.options.api_url} ({mwdb.api.server_version})")
