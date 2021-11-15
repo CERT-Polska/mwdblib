@@ -3,8 +3,7 @@ from itertools import islice
 
 from click_default_group import DefaultGroup
 
-from .authenticator import pass_mwdb
-from .main import main
+from .main import main, pass_mwdb
 from .formatters import pass_formatter
 
 

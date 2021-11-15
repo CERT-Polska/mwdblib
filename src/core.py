@@ -1,7 +1,6 @@
 import getpass
 import json
 import time
-import warnings
 
 from .api import APIClient
 from .exc import ObjectNotFoundError, ValidationError
@@ -15,10 +14,28 @@ class MWDB:
     """
     Main object used for communication with MWDB REST API
 
-    :param api: Custom :class:`APIClient` used to communicate with MWDB
+    :param api_url: MWDB API URL that ends with '/api/'.
+    :param api_key: MWDB API key
+    :param username: MWDB account username
+    :param password: MWDB account password
+    :param verify_ssl: Should the api verify SSL certificate correctness?
+    :param obey_ratelimiter: If false, HTTP 429 errors will cause an exception like all other error codes.
+        If true (default), library will transparently handle them by sleeping for a specified duration.
+    :param retry_on_downtime: If true, requests will be automatically retried after 10 seconds
+        on HTTP 502/504 and ConnectionError.
+    :param max_downtime_retries: Number of retries caused by temporary downtime
+    :param downtime_timeout: How long we need to wait between retries (in seconds)
+    :param retry_idempotent: Retry idempotent POST requests (default).
+        The only thing that is really non-idempotent in current API is :meth:`MWDBObject.add_comment`,
+        so it's not a big deal. You can turn it off if possible doubled comments
+        are problematic in your MWDB instance.
+    :param use_keyring: If true (default), APIClient uses keyring to fetch stored credentials.
+        If not, they're fetched from plaintext configuration.
+    :param emit_warnings: If true (default), warnings are emitted by APIClient
+    :param config_path: Path to the configuration file (default is `~/.mwdb`).
+        If None, configuration file will not be used by APIClient
+    :param api: Custom :class:`APIClient` to be used for communication with MWDB
     :type api: :class:`mwdblib.APIClient`, optional
-    :param api_key: API key used for authentication (omit if password-based authentication is used)
-    :type api_key: str, optional
 
     .. versionadded:: 2.6.0
        API request will sleep for a dozen of seconds when rate limit has been exceeded.
@@ -26,6 +43,16 @@ class MWDB:
     .. versionadded:: 3.2.0
        You can enable :attr:`retry_on_downtime` to automatically retry
        requests in case of HTTP 502/504 or ConnectionError.
+
+    .. versionadded:: 4.0.0
+
+       MWDB() by default uses credentials and api_url set by `mwdb login`.
+       If you don't want to automatically fetch them from configuration,
+       pass `config_path=None` to the constructor
+
+       Added `use_keyring`, `emit_warnings` and `config_path` options.
+
+       `username` and `password` can be passed directly to the constructor.
 
     Usage example:
 
@@ -43,7 +70,18 @@ class MWDB:
     def __init__(self, api=None, **api_options):
         self.api = api or APIClient(**api_options)
 
-    def login(self, username=None, password=None, warn=True):
+    @property
+    def options(self):
+        """
+        Returns object with current configuration of MWDB client
+
+        .. versionadded:: 4.0.0
+
+            Added MWDB.options property.
+        """
+        return self.api.options
+
+    def login(self, username=None, password=None):
         """
         Performs user authentication using provided username and password.
 
@@ -62,22 +100,21 @@ class MWDB:
         .. versionadded:: 2.6.0
            :py:meth:`MWDB.login` will warn if login is called after setting up API key
 
+        .. versionchanged:: 4.0.0
+            :py:meth:`MWDB.login` no longer warns about password-authenticated sessions or credentials that
+            are already set up.
+
         :param username: User name
         :type username: str
         :param password: Password
         :type password: str
-        :param warn: Show warning about password-authenticated sessions
-        :type warn: bool (default: True)
         :raises: requests.exceptions.HTTPError
         """
-        if self.api.api_key is not None:
-            warnings.warn("login() will reset the previously set API key. If you really want to reauthenticate, "
-                          "call logout() before to suppress this warning.")
         if username is None:
             username = input("Username: ")
         if password is None:
             password = getpass.getpass("Password: ")
-        self.api.login(username, password, warn=warn)
+        self.api.login(username, password)
 
     def logout(self):
         """

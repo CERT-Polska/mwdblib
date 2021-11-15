@@ -1,7 +1,6 @@
 import click
 
-from .authenticator import pass_mwdb
-from .main import main
+from .main import main, pass_mwdb
 from .formatters import confirm_action
 from .types import HashFile
 
