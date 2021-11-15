@@ -186,7 +186,7 @@ class APIClient:
                 downtime_retries -= 1
                 if self.options.emit_warnings:
                     warnings.warn('Retrying request due to connectivity issues. '
-                                  'Sleeping for {} seconds.'.format(downtime_timeout))
+                                  f'Sleeping for {downtime_timeout} seconds.')
                 time.sleep(downtime_timeout)
                 # Retry failed request...
 
