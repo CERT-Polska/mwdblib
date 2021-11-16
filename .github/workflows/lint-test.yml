@@ -21,11 +21,14 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8==3.8.3 pytest
+        pip install black==21.10b0 flake8==3.8.3 isort==5.10.1 mypy==0.910 pytest
+        pip install types-python-dateutil types-requests
         pip install .
-    - name: Lint with flake8
-      run: |
-        flake8 src --count --max-line-length=120 --show-source --statistics
+    - run: isort --check mwdblib/
+    - run: black --check mwdblib/
+    - run: flake8 mwdblib/
+    - run: mypy mwdblib/
+
     - name: Test with pytest
       run: |
         pytest
