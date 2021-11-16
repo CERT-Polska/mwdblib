@@ -106,7 +106,6 @@ class MWDBObject(MWDBElement):
         """
         Returns list of tags
 
-        :rtype: list[str]
         :return: List of tags
         """
         if "tags" not in self.data:
@@ -118,7 +117,6 @@ class MWDBObject(MWDBElement):
         """
         Returns list of comments
 
-        :rtype: list[:class:`mwdblib.comment.MWDBComment`]
         :return: List of comment objects
 
         Example - print all comments of last object commented as "malware":
@@ -142,7 +140,6 @@ class MWDBObject(MWDBElement):
         """
         Returns list of shares
 
-        :rtype: list[:class:`mwdblib.share.MWDBShare`]
         :return: List of share objects
         """
         from .share import MWDBShare
@@ -159,7 +156,6 @@ class MWDBObject(MWDBElement):
         """
         Returns dict object with metakeys.
 
-        :rtype: dict
         :return: Dict object containing metakey attributes
         """
         if "metakeys" not in self.data:
@@ -174,7 +170,6 @@ class MWDBObject(MWDBElement):
         """
         Returns timestamp of first object upload
 
-        :rtype: :class:`datetime.datetime`
         :return: datetime object with object upload timestamp
         """
         import dateutil.parser
@@ -188,7 +183,6 @@ class MWDBObject(MWDBElement):
         """
         Returns list of parent objects
 
-        :rtype: List[:class:`MWDBObject`]
         :return: List of parent objects
         """
         if "parents" not in self.data:
@@ -200,7 +194,6 @@ class MWDBObject(MWDBElement):
         """
         Returns list of child objects
 
-        :rtype: List[:class:`MWDBObject`]
         :return: List of child objects
         """
         if "children" not in self.data:
@@ -214,8 +207,6 @@ class MWDBObject(MWDBElement):
 
         .. versionadded:: 3.0.0
            Added :py:attr:`MWDBObject.content` property
-
-        :rtype: bytes
         """
         raise NotImplementedError()
 

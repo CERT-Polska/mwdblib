@@ -1,4 +1,4 @@
-mwdblib core interface
+Core interface (MWDB)
 ==================================
 
 .. automodule:: mwdblib

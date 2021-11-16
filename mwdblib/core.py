@@ -35,7 +35,7 @@ class MWDB:
     :param api_key: MWDB API key
     :param username: MWDB account username
     :param password: MWDB account password
-    :param verify_ssl: Should the api verify SSL certificate correctness?
+    :param verify_ssl: Verify SSL certificate correctness (default: True)
     :param obey_ratelimiter: If false, HTTP 429 errors will cause an exception
         like all other error codes.
         If true (default), library will transparently handle them by sleeping
@@ -63,15 +63,14 @@ class MWDB:
        You can enable :attr:`retry_on_downtime` to automatically retry
        requests in case of HTTP 502/504 or ConnectionError.
 
-    .. versionadded:: 4.0.0
-
-       MWDB() by default uses credentials and api_url set by `mwdb login`.
+    .. versionchanged:: 4.0.0
+       :class:`MWDB` by default uses credentials and api_url set by `mwdb login`.
        If you don't want to automatically fetch them from configuration,
        pass `config_path=None` to the constructor
 
-       Added `use_keyring`, `emit_warnings` and `config_path` options.
-
-       `username` and `password` can be passed directly to the constructor.
+    .. versionadded:: 4.0.0
+       Added ``use_keyring``, ``emit_warnings`` and ``config_path`` options.
+       ``username`` and ``password`` can be passed directly to the constructor.
 
     Usage example:
 
@@ -95,8 +94,7 @@ class MWDB:
         Returns object with current configuration of MWDB client
 
         .. versionadded:: 4.0.0
-
-            Added MWDB.options property.
+           Added MWDB.options property.
         """
         return self.api.options
 
