@@ -1,5 +1,5 @@
 import os
-from src import MWDB
+from mwdblib import MWDB
 import unittest
 from itertools import islice
 from tests.request_counter import RequestsCounter

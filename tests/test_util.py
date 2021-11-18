@@ -1,6 +1,5 @@
-import textwrap
 import unittest
-from src import config_dhash
+from mwdblib import config_dhash
 
 
 class TestPublicApi(unittest.TestCase):
