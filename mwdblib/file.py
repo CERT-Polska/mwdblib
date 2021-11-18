@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Optional, cast
 
+from .api import APIClient
 from .object import MWDBObject
 
 if TYPE_CHECKING:
-    from .api import APIClient
     from .config import MWDBConfig
     from .object import MWDBElementData
 
@@ -12,7 +12,7 @@ class MWDBFile(MWDBObject):
     URL_TYPE = "file"
     TYPE = "file"
 
-    def __init__(self, api: "APIClient", data: "MWDBElementData"):
+    def __init__(self, api: APIClient, data: "MWDBElementData"):
         self._content: Optional[bytes] = None
         super().__init__(api, data)
 
@@ -122,6 +122,7 @@ class MWDBFile(MWDBObject):
             else None
         )
 
+    @APIClient.requires("2.2.0")
     def download(self) -> bytes:
         """
         Downloads file contents
@@ -142,6 +143,14 @@ class MWDBFile(MWDBObject):
 
            print("Downloaded {}".format(dropper.file_name))
         """
+        download_endpoint = "file/{id}/download".format(**self.data)
+        token = self.api.post(download_endpoint)["token"]
+        return cast(
+            bytes, self.api.get(download_endpoint, params={"token": token}, raw=True)
+        )
+
+    @download.fallback("2.0.0")
+    def download_legacy(self) -> bytes:
         token = self.api.post("request/sample/{id}".format(**self.data))["url"].split(
             "/"
         )[-1]

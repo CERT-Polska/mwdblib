@@ -1,9 +1,11 @@
 import base64
 import datetime
+import functools
 import json
+import re
 import time
 import warnings
-from typing import Any, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, Type, cast
 from urllib.parse import urljoin
 
 import requests
@@ -11,13 +13,18 @@ from requests.exceptions import ConnectionError, HTTPError
 
 from ..exc import (
     BadResponseError,
+    EndpointNotFoundError,
     GatewayError,
     InvalidCredentialsError,
     LimitExceededError,
     NotAuthenticatedError,
+    VersionMismatchError,
     map_http_error,
 )
 from .options import APIClientOptions
+
+if TYPE_CHECKING:
+    from .. import MWDB
 
 
 class JWTAuthToken:
@@ -234,3 +241,93 @@ class APIClient:
 
     def delete(self, *args: Any, **kwargs: Any) -> Any:
         return self.request("delete", *args, **kwargs)
+
+    @staticmethod
+    def requires(required_version: str, always_check_version: bool = False) -> Callable:
+        """
+        Method decorator that provides server version requirement
+        and fallback to older implementation if available.
+
+        To optimize requests sent by CLI: first method is called
+        always if server version is not already available. If it
+        fails with EndpointNotFoundError, server version is fetched
+        and used to determine if fallback is available.
+
+        If your method fails on something different than missing endpoint,
+        you can check version always by enabling ``always_check_version``
+        flag.
+        """
+
+        class VersionDependentMethod:
+            def __init__(self, main_method: Callable) -> None:
+                self.required_version = parse_version(required_version)
+                self.main_method = main_method
+                self.fallback_methods: List[Tuple[Tuple[int, ...], Callable]] = []
+                functools.update_wrapper(self, main_method)
+
+            def fallback(self, fallback_version: str) -> Callable:
+                """
+                Registers fallback method
+                """
+
+                def fallback_decorator(fallback_method: Callable) -> Callable:
+                    self.fallback_methods = sorted(
+                        self.fallback_methods
+                        + [(parse_version(fallback_version), fallback_method)],
+                        key=lambda e: e[0],
+                        reverse=True,
+                    )
+                    return self
+
+                return fallback_decorator
+
+            def __get__(self, mwdb: "MWDB", objtype: Type) -> Callable:
+                return functools.partial(self.__call__, mwdb)
+
+            def __call__(self, mwdb: "MWDB", *args: Any, **kwargs: Any) -> Any:
+                # Check server version if available
+                server_version: Optional[Tuple[int, ...]]
+                if mwdb.api._server_metadata is not None or always_check_version:
+                    server_version = parse_version(mwdb.api.server_version)
+                else:
+                    server_version = None
+
+                # If version available and matches the requirement: call main method
+                if server_version is None or server_version >= self.required_version:
+                    try:
+                        return self.main_method(mwdb, *args, **kwargs)
+                    except EndpointNotFoundError:
+                        # On EndpointNotFoundError, check version requirement
+                        server_version = parse_version(mwdb.api.server_version)
+                        if server_version >= self.required_version:
+                            # If matches the requirement: something wrong happened
+                            raise
+
+                # If not: call fallback methods
+                fallback_version = self.required_version
+                for fallback_version, fallback_method in self.fallback_methods:
+                    if server_version >= fallback_version:
+                        return fallback_method(mwdb, *args, **kwargs)
+                else:
+                    # If no fallback matched: raise VersionMismatchError
+                    raise VersionMismatchError(
+                        f"Required server version is "
+                        f"'>={'.'.join(map(str, fallback_version))}' "
+                        f"but '{mwdb.api.server_version}' is installed"
+                    )
+
+        return VersionDependentMethod
+
+
+def parse_version(version: str) -> Tuple[int, ...]:
+    """
+    Parses server version into numerical tuple. Pre-release suffixes
+    e.g. -rc1 are accepted but ignored.
+    """
+    match = re.match(
+        r"^(?P<major>\d+)\." r"(?P<minor>\d+)\." r"(?P<patch>\d+)" r"(?:[-.]\w+)?",
+        version,
+    )
+    if not match:
+        raise ValueError(f"Version doesn't match to pattern: {version}")
+    return tuple(int(value) for value in match.groups())

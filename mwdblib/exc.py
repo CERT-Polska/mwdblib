@@ -160,6 +160,32 @@ class TypeConflictError(ObjectError):
     pass
 
 
+class EndpointNotFoundError(MWDBError):
+    """
+    API endpoint was not found on the server. Possibly installed version
+    of MWDB Core doesn't support required functionality and you need to
+    upgrade.
+
+    This exception is sometimes handled internally to fallback to
+    backwards-compatible implementation.
+
+    .. versionadded:: 4.0.0
+    """
+
+    pass
+
+
+class VersionMismatchError(MWDBError):
+    """
+    Client detected that server version of MWDB Core is too old to support
+    this functionality. You need to upgrade your server version to use it.
+
+    .. versionadded:: 4.0.0
+    """
+
+    pass
+
+
 def get_http_error_message(http_error: requests.exceptions.HTTPError) -> str:
     import json
 
@@ -191,6 +217,9 @@ def map_http_error(http_error: requests.exceptions.HTTPError) -> MWDBError:
             return UserDisabledError(http_error=http_error)
         return PermissionError(http_error=http_error)
     elif http_error.response.status_code == requests.codes.not_found:
+        error_message = get_http_error_message(http_error)
+        if "The requested URL was not found on the server" in error_message:
+            return EndpointNotFoundError(http_error=http_error)
         return ObjectNotFoundError(http_error=http_error)
     elif http_error.response.status_code == requests.codes.conflict:
         return TypeConflictError(http_error=http_error)
