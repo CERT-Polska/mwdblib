@@ -1,10 +1,9 @@
+import datetime
 from typing import TYPE_CHECKING, cast
 
 from .object import MWDBElement
 
 if TYPE_CHECKING:
-    import datetime
-
     from .api import APIClient
     from .object import MWDBElementData, MWDBObject
 
@@ -39,9 +38,7 @@ class MWDBComment(MWDBElement):
         """
         Comment timestamp
         """
-        import dateutil.parser
-
-        return dateutil.parser.parse(self.data["timestamp"])
+        return datetime.datetime.fromisoformat(self.data["timestamp"])
 
     @property
     def comment(self) -> str:

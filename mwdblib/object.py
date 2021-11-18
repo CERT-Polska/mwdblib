@@ -1,9 +1,8 @@
+import datetime
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union, cast
 
 if TYPE_CHECKING:
-    import datetime
-
     from .api import APIClient
     from .comment import MWDBComment
     from .share import MWDBShare
@@ -172,11 +171,9 @@ class MWDBObject(MWDBElement):
 
         :return: datetime object with object upload timestamp
         """
-        import dateutil.parser
-
         if "upload_time" not in self.data:
             self._load()
-        return dateutil.parser.parse(self.data["upload_time"])
+        return datetime.datetime.fromisoformat(self.data["upload_time"])
 
     @property
     def parents(self) -> List["MWDBObject"]:
