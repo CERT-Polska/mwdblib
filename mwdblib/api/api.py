@@ -325,7 +325,7 @@ def parse_version(version: str) -> Tuple[int, ...]:
     e.g. -rc1 are accepted but ignored.
     """
     match = re.match(
-        r"^(?P<major>\d+)\." r"(?P<minor>\d+)\." r"(?P<patch>\d+)" r"(?:[-.]\w+)?",
+        r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?:[-.]\w+)?",
         version,
     )
     if not match:
