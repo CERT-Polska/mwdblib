@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [3.6, 3.8]
+        python: [3.7, 3.8]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python }}
@@ -22,7 +22,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install black==21.10b0 flake8==3.8.3 isort==5.10.1 mypy==0.910 pytest
-        pip install types-python-dateutil types-requests
+        pip install types-requests
         pip install .
     - run: isort --check mwdblib/
     - run: black --check mwdblib/
