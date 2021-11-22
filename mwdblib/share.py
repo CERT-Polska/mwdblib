@@ -1,10 +1,9 @@
+import datetime
 from typing import TYPE_CHECKING, Optional, cast
 
 from .object import MWDBElement, MWDBObject
 
 if TYPE_CHECKING:
-    import datetime
-
     from .api import APIClient
     from .object import MWDBElementData
 
@@ -82,9 +81,7 @@ class MWDBShare(MWDBElement):
 
         :return: datetime object with object share timestamp
         """
-        import dateutil.parser
-
-        return dateutil.parser.parse(self.data["access_time"])
+        return datetime.datetime.fromisoformat(self.data["access_time"])
 
     @property
     def group(self) -> str:

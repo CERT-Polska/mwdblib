@@ -1,10 +1,9 @@
+import datetime
 from typing import TYPE_CHECKING, Optional, cast
 
 from .object import MWDBObject
 
 if TYPE_CHECKING:
-    import datetime
-
     from .config import MWDBConfig
 
 
@@ -93,8 +92,6 @@ class MWDBBlob(MWDBObject):
         """
         :return: datetime object when blob was last seen in MWDB
         """
-        import dateutil.parser
-
         if "last_seen" not in self.data:
             self._load()
-        return dateutil.parser.parse(self.data["last_seen"])
+        return datetime.datetime.fromisoformat(self.data["last_seen"])
