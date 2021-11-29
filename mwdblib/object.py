@@ -2,9 +2,11 @@ import datetime
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union, cast
 
+from .api import APIClient
+
 if TYPE_CHECKING:
-    from .api import APIClient
     from .comment import MWDBComment
+    from .karton import MWDBKartonAnalysis
     from .share import MWDBShare
 
 MWDBElementData = Dict[str, Any]
@@ -16,7 +18,7 @@ class MWDBElement:
     Represents any MWDB entity that can be loaded from API
     """
 
-    def __init__(self, api: "APIClient", data: MWDBElementData) -> None:
+    def __init__(self, api: APIClient, data: MWDBElementData) -> None:
         self.api = api
         self.data = dict(data)
 
@@ -62,7 +64,7 @@ class MWDBObject(MWDBElement):
         return super()._load(url_pattern, mapper=mapper)
 
     @staticmethod
-    def create(api: "APIClient", data: MWDBElementData) -> "MWDBObject":
+    def create(api: APIClient, data: MWDBElementData) -> "MWDBObject":
         """
         Creates specialized MWDBObject subclass instance based on specified ``data``
         """
@@ -197,6 +199,27 @@ class MWDBObject(MWDBElement):
             self._load()
         return [self.create(self.api, child) for child in self.data["children"]]
 
+    @property  # type: ignore
+    @APIClient.requires("2.3.0")
+    def analyses(self) -> List["MWDBKartonAnalysis"]:
+        """
+        Returns list of Karton analyses related with this object
+
+        Requires MWDB Core >= 2.3.0.
+
+        .. versionadded:: 4.0.0
+        """
+        from .karton import MWDBKartonAnalysis
+
+        if "analyses" not in self.data:
+            self._load(
+                "object/{id}/karton",
+                mapper=lambda data: {"analyses": data.get("analyses", [])},
+            )
+        return [
+            MWDBKartonAnalysis(self.api, analysis) for analysis in self.data["analyses"]
+        ]
+
     @property
     def content(self) -> bytes:
         """
@@ -266,6 +289,47 @@ class MWDBObject(MWDBElement):
             "object/{id}/meta".format(**self.data), json={"key": key, "value": value}
         )
         self._expire("metakeys")
+
+    @APIClient.requires("2.3.0")
+    def reanalyze(
+        self, arguments: Optional[Dict[str, Any]] = None
+    ) -> "MWDBKartonAnalysis":
+        """
+        Submits new Karton analysis for given object.
+
+        Requires MWDB Core >= 2.3.0.
+
+        :param arguments: |
+            Optional, additional arguments for analysis.
+            Reserved for future functionality.
+
+        .. versionadded:: 4.0.0
+        """
+        from .karton import MWDBKartonAnalysis
+
+        arguments = {"arguments": arguments or {}}
+        analysis = self.api.post(
+            "object/{id}/karton".format(**self.data), json=arguments
+        )
+        self._expire("analyses")
+        return MWDBKartonAnalysis(self.api, analysis)
+
+    @APIClient.requires("2.3.0")
+    def assign_analysis(self, analysis_id: str) -> "MWDBKartonAnalysis":
+        """
+        Assigns object to existing Karton analysis
+
+        Requires MWDB Core >= 2.3.0.
+
+        :param analysis_id: Karton analysis UUID
+
+        .. versionadded:: 4.0.0
+        """
+        from .karton import MWDBKartonAnalysis
+
+        analysis = self.api.put(f"object/{self.id}/karton/{analysis_id}")
+        self._expire("analyses")
+        return MWDBKartonAnalysis(self.api, analysis)
 
     def share_with(self, group: str) -> None:
         """
