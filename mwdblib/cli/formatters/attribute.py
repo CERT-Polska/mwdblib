@@ -95,4 +95,4 @@ class ObjectTypeFormatter(AttributeFormatter):
 class RelationTagFormatter(TagFormatter):
     def format(self, formatter, value):
         tags = set([tag for object in value for tag in object.tags])
-        return super(RelationTagFormatter, self).format(formatter, list(tags))
+        return super().format(formatter, list(tags))

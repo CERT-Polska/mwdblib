@@ -11,7 +11,7 @@ from .main import main, pass_mwdb
 @click.option(
     "--password", "-p", type=str, default=None, help="MWDB password (default: ask)"
 )
-@click.option("--via-api-key", "-A", is_flag=True)
+@click.option("--via-api-key", "-A", is_flag=True, help="Use API key provided by stdin")
 @click.option(
     "--api-key",
     "-a",
@@ -22,7 +22,7 @@ from .main import main, pass_mwdb
 @pass_mwdb
 @click.pass_context
 def login_command(ctx, mwdb, username, password, via_api_key, api_key):
-    """Setup credentials for MWDB authentication"""
+    """Store credentials for MWDB authentication"""
     if via_api_key:
         api_key = click.prompt("Provide your API key token", hide_input=True)
     if api_key is None:
