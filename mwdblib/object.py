@@ -87,7 +87,7 @@ class MWDBObject(MWDBElement):
 
         The object should be treated as invalidated after using this method .
         """
-        self.api.delete("object/{id}".format(self.data["id"]))
+        self.api.delete("object/{}".format(self.data["id"]))
         self.flush()
 
     @property
