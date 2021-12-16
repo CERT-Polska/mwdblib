@@ -81,6 +81,15 @@ class MWDBObject(MWDBElement):
             return MWDBBlob(api, data)
         raise RuntimeError(f"Unsupported object type: '{type}'")
 
+    def remove(self) -> None:
+        """
+        Remove specific object from mwdb
+
+        The object should be treated as invalidated after using this method .
+        """
+        self.api.delete("object/{}".format(self.data["id"]))
+        self.flush()
+
     @property
     def id(self) -> str:
         """
