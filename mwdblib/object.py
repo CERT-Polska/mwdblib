@@ -358,4 +358,4 @@ class MWDBObject(MWDBElement):
         Flushes local object state in case of pending updates.
         All object-specific properties will be lazy-loaded using API
         """
-        self.data = {"id": self.data["id"]}
+        self.data = {"id": self.data["id"], "type": self.data["type"]}
