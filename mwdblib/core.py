@@ -769,7 +769,8 @@ class MWDB:
         :type content: bytes
         :param parent: Parent object or parent identifier
         :type parent: :class:`MWDBObject` or str, optional
-        :param metakeys: Dictionary with string attributes (to be used for MWDB Core older than 2.6.0)
+        :param metakeys: Dictionary with string attributes
+             (to be used for MWDB Core older than 2.6.0)
         :type metakeys: dict, optional
         :param attributes: Dictionary with attributes to be set after upload.
             If you want to set many values with the same key: use list as value.
@@ -847,7 +848,8 @@ class MWDB:
         :type config_type: str, optional
         :param parent: Parent object or parent identifier
         :type parent: :class:`MWDBObject` or str, optional
-        :param metakeys: Dictionary with string attributes (to be used for MWDB Core older than 2.6.0)
+        :param metakeys: Dictionary with string attributes
+             (to be used for MWDB Core older than 2.6.0)
         :type metakeys: dict, optional
         :param attributes: Dictionary with attributes to be set after upload.
             If you want to set many values with the same key: use list as value.
@@ -922,7 +924,8 @@ class MWDB:
                 :type content: str
                 :param parent: Parent object or parent identifier
                 :type parent: :class:`MWDBObject` or str, optional
-        :param metakeys: Dictionary with string attributes (to be used for MWDB Core older than 2.6.0)
+                :param metakeys: Dictionary with string attributes
+                    (to be used for MWDB Core older than 2.6.0)
                 :type metakeys: dict, optional
                 :param attributes: Dictionary with attributes to be set after upload.
                     If you want to set many values with the same key: use list as value.
