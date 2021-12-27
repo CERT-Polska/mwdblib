@@ -914,37 +914,37 @@ class MWDB:
         public: bool = False,
     ) -> MWDBBlob:
         """
-                Upload blob object
+        Upload blob object
 
-                :param name: Blob name (see also :py:attr:`MWDBBlob.blob_name`)
-                :type name: str
-                :param type: Blob type (see also :py:attr:`MWDBBlob.blob_type`)
-                :type type: str
-                :param content: Blob content (see also :py:attr:`MWDBBlob.content`)
-                :type content: str
-                :param parent: Parent object or parent identifier
-                :type parent: :class:`MWDBObject` or str, optional
-                :param metakeys: Dictionary with string attributes
-                    (to be used for MWDB Core older than 2.6.0)
-                :type metakeys: dict, optional
-                :param attributes: Dictionary with attributes to be set after upload.
-                    If you want to set many values with the same key: use list as value.
-                    Attributes support object values that are JSON-serializable.
-                :type attributes: dict, optional
-                :param tags: Dictionary with tags to be set after upload.
-                :type tags: list, optional
-                :param share_with: Group name you want to share object with
-                :type share_with: str, optional
-                :param private: True if sample should be uploaded as private
-                :type private: bool, optional
-                :param public: True if sample should be visible for everyone
-                :type public: bool, optional
-                :rtype: :class:`MWDBBlob`
+        :param name: Blob name (see also :py:attr:`MWDBBlob.blob_name`)
+        :type name: str
+        :param type: Blob type (see also :py:attr:`MWDBBlob.blob_type`)
+        :type type: str
+        :param content: Blob content (see also :py:attr:`MWDBBlob.content`)
+        :type content: str
+        :param parent: Parent object or parent identifier
+        :type parent: :class:`MWDBObject` or str, optional
+        :param metakeys: Dictionary with string attributes
+            (to be used for MWDB Core older than 2.6.0)
+        :type metakeys: dict, optional
+        :param attributes: Dictionary with attributes to be set after upload.
+            If you want to set many values with the same key: use list as value.
+            Attributes support object values that are JSON-serializable.
+        :type attributes: dict, optional
+        :param tags: Dictionary with tags to be set after upload.
+        :type tags: list, optional
+        :param share_with: Group name you want to share object with
+        :type share_with: str, optional
+        :param private: True if sample should be uploaded as private
+        :type private: bool, optional
+        :param public: True if sample should be visible for everyone
+        :type public: bool, optional
+        :rtype: :class:`MWDBBlob`
 
-                .. versionadded:: 4.0.0
-                    Added ``attributes`` and ``tags`` arguments.
-                    They are supported by MWDB Core >= 2.6.0, use ``metakeys``
-                    if your MWDB Core version is older.
+        .. versionadded:: 4.0.0
+            Added ``attributes`` and ``tags`` arguments.
+            They are supported by MWDB Core >= 2.6.0, use ``metakeys``
+            if your MWDB Core version is older.
         """
         params = {"blob_name": name, "blob_type": type, "content": content}
         params.update(
