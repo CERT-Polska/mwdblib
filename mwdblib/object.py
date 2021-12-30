@@ -162,6 +162,20 @@ class MWDBObject(MWDBElement):
         return [MWDBShare(self.api, share, self) for share in self.data["shares"]]
 
     @property
+    def attributes(self) -> Dict[Any, List[Any]]:
+        """
+        Returns dict object with attributes.
+
+        :return: Dict object containing attributes
+        """
+        if "attributes" not in self.data:
+            self._load("object/{id}/attribute")
+        result = defaultdict(list)
+        for m in self.data["attributes"]:
+            result[m["key"]].append(m["value"])
+        return dict(result)
+
+    @property
     def metakeys(self) -> Dict[str, List[str]]:
         """
         Returns dict object with metakeys.
@@ -284,6 +298,20 @@ class MWDBObject(MWDBElement):
             "object/{id}/comment".format(**self.data), json={"comment": comment}
         )
         self._expire("comments")
+
+    def add_attribute(self, key: str, value: Any) -> None:
+        """
+        Adds attribute
+
+        :param key: Attribute key
+        :type key: str
+        :param value: Attribute value
+        :type value: str
+        """
+        self.api.post(
+            "object/{id}/attribute".format(**self.data), json={"key": key, "value": value}
+        )
+        self._expire("attributes")
 
     def add_metakey(self, key: str, value: str) -> None:
         """
