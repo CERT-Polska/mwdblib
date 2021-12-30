@@ -309,7 +309,8 @@ class MWDBObject(MWDBElement):
         :type value: str
         """
         self.api.post(
-            "object/{id}/attribute".format(**self.data), json={"key": key, "value": value}
+            "object/{id}/attribute".format(**self.data),
+            json={"key": key, "value": value},
         )
         self._expire("attributes")
 
