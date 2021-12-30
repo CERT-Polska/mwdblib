@@ -700,6 +700,8 @@ class MWDB:
         self,
         parent: Optional[Union[MWDBObject, str]],
         metakeys: Optional[Dict[str, Union[str, List[str]]]],
+        attributes: Optional[Dict[str, Union[Any, List[Any]]]],
+        tags: Optional[List[str]],
         share_with: Optional[str],
         private: bool,
         public: bool,
@@ -709,12 +711,22 @@ class MWDB:
         """
         if isinstance(parent, MWDBObject):
             parent = parent.id
+        if metakeys and attributes:
+            raise ValueError("'attributes' and 'metakeys' must be used exclusively")
 
-        metakeys_list = [
+        # Use attributes if set or metakeys otherwise
+        _attributes = attributes or metakeys or {}
+        attributes_list = [
             {"key": key, "value": value}
-            for key, value_list in (metakeys or {}).items()
+            for key, value_list in _attributes.items()
             for value in (value_list if isinstance(value_list, list) else [value_list])
         ]
+
+        _metakeys_param = {"metakeys": attributes_list} if metakeys else {}
+
+        _attributes_param = {"attributes": attributes_list} if attributes else {}
+
+        _tags_param = {"tags": [{"tag": tag} for tag in tags]} if tags else {}
 
         if len([arg for arg in (share_with, private, public) if arg]) > 1:
             raise ValidationError(
@@ -728,7 +740,13 @@ class MWDB:
         elif not share_with:
             share_with = "*"
 
-        return {"parent": parent, "metakeys": metakeys_list, "upload_as": share_with}
+        return {
+            "parent": parent,
+            "upload_as": share_with,
+            **_tags_param,
+            **_metakeys_param,
+            **_attributes_param,
+        }
 
     def upload_file(
         self,
@@ -736,6 +754,8 @@ class MWDB:
         content: bytes,
         parent: Optional[Union[MWDBObject, str]] = None,
         metakeys: Optional[Dict[str, Union[str, List[str]]]] = None,
+        attributes: Optional[Dict[str, Union[Any, List[Any]]]] = None,
+        tags: Optional[List[str]] = None,
         share_with: Optional[str] = None,
         private: bool = False,
         public: bool = False,
@@ -749,9 +769,15 @@ class MWDB:
         :type content: bytes
         :param parent: Parent object or parent identifier
         :type parent: :class:`MWDBObject` or str, optional
-        :param metakeys: Dictionary with metakeys.
-            If you want to set many values with the same key: use list as value
+        :param metakeys: Dictionary with string attributes
+            (to be used for MWDB Core older than 2.6.0)
         :type metakeys: dict, optional
+        :param attributes: Dictionary with attributes to be set after upload.
+            If you want to set many values with the same key: use list as value.
+            Attributes support object values that are JSON-serializable.
+        :type attributes: dict, optional
+        :param tags: Dictionary with tags to be set after upload.
+        :type tags: list, optional
         :param share_with: Group name you want to share object with
         :type share_with: str, optional
         :param private: True if sample should be uploaded as private
@@ -759,6 +785,11 @@ class MWDB:
         :param public: True if sample should be visible for everyone
         :type public: bool, optional
         :rtype: :class:`MWDBFile`
+
+        .. versionadded:: 4.0.0
+            Added ``attributes`` and ``tags`` arguments.
+            They are supported by MWDB Core >= 2.6.0, use ``metakeys``
+            if your MWDB Core version is older.
 
         Usage example:
 
@@ -778,7 +809,13 @@ class MWDB:
                     None,
                     json.dumps(
                         self._upload_params(
-                            parent, metakeys, share_with, private, public
+                            parent=parent,
+                            metakeys=metakeys,
+                            attributes=attributes,
+                            tags=tags,
+                            share_with=share_with,
+                            private=private,
+                            public=public,
                         )
                     ),
                 ),
@@ -793,6 +830,8 @@ class MWDB:
         config_type: str = "static",
         parent: Optional[Union[MWDBObject, str]] = None,
         metakeys: Optional[Dict[str, Union[str, List[str]]]] = None,
+        attributes: Optional[Dict[str, Union[Any, List[Any]]]] = None,
+        tags: Optional[List[str]] = None,
         share_with: Optional[str] = None,
         private: bool = False,
         public: bool = False,
@@ -809,9 +848,15 @@ class MWDB:
         :type config_type: str, optional
         :param parent: Parent object or parent identifier
         :type parent: :class:`MWDBObject` or str, optional
-        :param metakeys: Dictionary with metakeys.
-            If you want to set many values with the same key: use list as value
+        :param metakeys: Dictionary with string attributes
+            (to be used for MWDB Core older than 2.6.0)
         :type metakeys: dict, optional
+        :param attributes: Dictionary with attributes to be set after upload.
+            If you want to set many values with the same key: use list as value.
+            Attributes support object values that are JSON-serializable.
+        :type attributes: dict, optional
+        :param tags: Dictionary with tags to be set after upload.
+        :type tags: list, optional
         :param share_with: Group name you want to share object with
         :type share_with: str, optional
         :param private: True if sample should be uploaded as private
@@ -819,7 +864,11 @@ class MWDB:
         :param public: True if sample should be visible for everyone
         :type public: bool, optional
         :rtype: :class:`MWDBConfig`
-        :raises: :class:`requests.exceptions.HTTPError`, :class:`ValueError`
+
+        .. versionadded:: 4.0.0
+            Added ``attributes`` and ``tags`` arguments.
+            They are supported by MWDB Core >= 2.6.0, use ``metakeys``
+            if your MWDB Core version is older.
 
         .. code-block:: python
 
@@ -838,7 +887,15 @@ class MWDB:
         """
         params = {"family": family, "cfg": cfg, "config_type": config_type}
         params.update(
-            self._upload_params(parent, metakeys, share_with, private, public)
+            self._upload_params(
+                parent=parent,
+                metakeys=metakeys,
+                attributes=attributes,
+                tags=tags,
+                share_with=share_with,
+                private=private,
+                public=public,
+            )
         )
         result = self.api.post("config", json=params)
         return MWDBConfig(self.api, result)
@@ -850,6 +907,8 @@ class MWDB:
         content: str,
         parent: Optional[Union[MWDBObject, str]] = None,
         metakeys: Optional[Dict[str, Union[str, List[str]]]] = None,
+        attributes: Optional[Dict[str, Union[Any, List[Any]]]] = None,
+        tags: Optional[List[str]] = None,
         share_with: Optional[str] = None,
         private: bool = False,
         public: bool = False,
@@ -865,9 +924,15 @@ class MWDB:
         :type content: str
         :param parent: Parent object or parent identifier
         :type parent: :class:`MWDBObject` or str, optional
-        :param metakeys: Dictionary with metakeys.
-            If you want to set many values with the same key: use list as value
+        :param metakeys: Dictionary with string attributes
+            (to be used for MWDB Core older than 2.6.0)
         :type metakeys: dict, optional
+        :param attributes: Dictionary with attributes to be set after upload.
+            If you want to set many values with the same key: use list as value.
+            Attributes support object values that are JSON-serializable.
+        :type attributes: dict, optional
+        :param tags: Dictionary with tags to be set after upload.
+        :type tags: list, optional
         :param share_with: Group name you want to share object with
         :type share_with: str, optional
         :param private: True if sample should be uploaded as private
@@ -875,11 +940,23 @@ class MWDB:
         :param public: True if sample should be visible for everyone
         :type public: bool, optional
         :rtype: :class:`MWDBBlob`
-        :raises: :class:`requests.exceptions.HTTPError`, :class:`ValueError`
+
+        .. versionadded:: 4.0.0
+            Added ``attributes`` and ``tags`` arguments.
+            They are supported by MWDB Core >= 2.6.0, use ``metakeys``
+            if your MWDB Core version is older.
         """
         params = {"blob_name": name, "blob_type": type, "content": content}
         params.update(
-            self._upload_params(parent, metakeys, share_with, private, public)
+            self._upload_params(
+                parent=parent,
+                metakeys=metakeys,
+                attributes=attributes,
+                tags=tags,
+                share_with=share_with,
+                private=private,
+                public=public,
+            )
         )
         result = self.api.post("blob", json=params)
         return MWDBBlob(self.api, result)
