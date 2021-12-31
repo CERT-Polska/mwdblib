@@ -162,7 +162,7 @@ class MWDBObject(MWDBElement):
         return [MWDBShare(self.api, share, self) for share in self.data["shares"]]
 
     @property
-    def attributes(self) -> Dict[Any, List[Any]]:
+    def attributes(self) -> Dict[str, List[Any]]:
         """
         Returns dict object with attributes.
 
@@ -306,7 +306,7 @@ class MWDBObject(MWDBElement):
         :param key: Attribute key
         :type key: str
         :param value: Attribute value
-        :type value: str
+        :type value: Any (JSON-like object)
         """
         self.api.post(
             "object/{id}/attribute".format(**self.data),
