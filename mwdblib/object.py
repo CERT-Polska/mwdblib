@@ -161,10 +161,15 @@ class MWDBObject(MWDBElement):
             )
         return [MWDBShare(self.api, share, self) for share in self.data["shares"]]
 
-    @property
+    @property  # type: ignore
+    @APIClient.requires("2.6.0")
     def attributes(self) -> Dict[str, List[Any]]:
         """
         Returns dict object with attributes.
+
+        Requires MWDB Core >= 2.6.0.
+
+        .. versionadded:: 4.0.0
 
         :return: Dict object containing attributes
         """
@@ -179,6 +184,9 @@ class MWDBObject(MWDBElement):
     def metakeys(self) -> Dict[str, List[str]]:
         """
         Returns dict object with metakeys.
+
+        .. deprecated:: 4.0.0
+           For MWDB Core >=2.6.0 use :py:attr:`attributes` instead
 
         :return: Dict object containing metakey attributes
         """
@@ -299,9 +307,14 @@ class MWDBObject(MWDBElement):
         )
         self._expire("comments")
 
+    @APIClient.requires("2.6.0")
     def add_attribute(self, key: str, value: Any) -> None:
         """
         Adds attribute
+
+        Requires MWDB Core >= 2.6.0.
+
+        .. versionadded:: 4.0.0
 
         :param key: Attribute key
         :type key: str
@@ -317,6 +330,9 @@ class MWDBObject(MWDBElement):
     def add_metakey(self, key: str, value: str) -> None:
         """
         Adds metakey attribute
+
+        .. deprecated:: 4.0.0
+           For MWDB Core >=2.6.0 use :py:attr:`add_attribute` instead
 
         :param key: Attribute key
         :type key: str
