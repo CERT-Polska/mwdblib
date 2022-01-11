@@ -215,7 +215,11 @@ class TabularFormatter(ObjectFormatter):
     def format_attributes_list(self, attributes):
         return self.format_attr_table(
             [
-                [key, AttributeFormatter(), "\n".join(value for value in attributes[key])]
+                [
+                    key,
+                    AttributeFormatter(),
+                    "\n".join(value for value in attributes[key]),
+                ]
                 for key in sorted(attributes.keys())
             ]
         )
