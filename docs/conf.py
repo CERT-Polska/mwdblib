@@ -20,7 +20,7 @@ from mwdblib import __version__  # noqa: E402
 # -- Project information -----------------------------------------------------
 
 project = 'mwdblib'
-copyright = '2021, CERT Polska'
+copyright = '2022, CERT Polska'
 author = 'CERT Polska'
 
 # The full version, including alpha/beta/rc tags
