@@ -7,6 +7,7 @@ try:
     from .login import login_command, logout_command
     from .main import main
     from .metakey import metakey_command
+    from .attribute import attribute_command
     from .search import search_command
     from .share import share_command
     from .tag import tag_command
@@ -22,6 +23,7 @@ try:
         "login_command",
         "logout_command",
         "metakey_command",
+        "attribute_command",
         "search_command",
         "share_command",
         "tag_command",

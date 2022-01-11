@@ -27,3 +27,6 @@ class JSONFormatter(ObjectFormatter):
 
     def format_metakeys_list(self, metakeys):
         return json.dumps(metakeys)
+
+    def format_attributes_list(self, attributes):
+        return json.dumps(attributes)

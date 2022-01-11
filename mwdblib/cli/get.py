@@ -102,3 +102,15 @@ def get_metakeys(mwdb, formatter, file_or_hash):
     """
     obj = mwdb.query(file_or_hash)
     click.echo(formatter.format_metakeys_list(obj.metakeys))
+
+
+@get_command.command("attributes")
+@click.argument("file-or-hash", type=HashFile())
+@pass_formatter
+@pass_mwdb
+def get_attributes(mwdb, formatter, file_or_hash):
+    """
+    Get list of attributes
+    """
+    obj = mwdb.query(file_or_hash)
+    click.echo(formatter.format_attributes_list(obj.attributes))
