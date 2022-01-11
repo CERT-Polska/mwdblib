@@ -1,4 +1,5 @@
 try:
+    from .attribute import attribute_command
     from .comment import comment_command
     from .fetch import fetch_command
     from .get import get_command
@@ -7,7 +8,6 @@ try:
     from .login import login_command, logout_command
     from .main import main
     from .metakey import metakey_command
-    from .attribute import attribute_command
     from .search import search_command
     from .share import share_command
     from .tag import tag_command
