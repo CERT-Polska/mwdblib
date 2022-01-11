@@ -767,7 +767,7 @@ class MWDB:
         :param name: Original file name (see also :py:attr:`MWDBFile.file_name`)
         :type name: str
         :param content: File contents
-        :type content: bytes
+        :type content: bytes or BinaryIO
         :param parent: Parent object or parent identifier
         :type parent: :class:`MWDBObject` or str, optional
         :param metakeys: Dictionary with string attributes
