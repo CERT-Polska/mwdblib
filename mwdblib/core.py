@@ -4,6 +4,7 @@ import time
 from typing import (
     TYPE_CHECKING,
     Any,
+    BinaryIO,
     Dict,
     Iterator,
     List,
@@ -751,7 +752,7 @@ class MWDB:
     def upload_file(
         self,
         name: str,
-        content: bytes,
+        content: Union[bytes, BinaryIO],
         parent: Optional[Union[MWDBObject, str]] = None,
         metakeys: Optional[Dict[str, Union[str, List[str]]]] = None,
         attributes: Optional[Dict[str, Union[Any, List[Any]]]] = None,
@@ -766,7 +767,7 @@ class MWDB:
         :param name: Original file name (see also :py:attr:`MWDBFile.file_name`)
         :type name: str
         :param content: File contents
-        :type content: bytes
+        :type content: bytes or BinaryIO
         :param parent: Parent object or parent identifier
         :type parent: :class:`MWDBObject` or str, optional
         :param metakeys: Dictionary with string attributes
