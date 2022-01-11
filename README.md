@@ -16,7 +16,7 @@ $ pip install mwdblib[cli]
 $ mwdb version
 ```
 
-The main interface is MWDB object that provides various methods to interact with MWDB.
+The main interface is the MWDB object that provides various methods to interact with MWDB.
 
 ```python
 >>> from mwdblib import MWDB
@@ -35,7 +35,7 @@ Password:
 [<mwdblib.file.MWDBConfig at ...>]
 ```
 
-mwdblib provides also optional command line interface (CLI), which can be used to interact with MWDB repository.
+mwdblib provides also optional command line interface (CLI), which can be used to interact with a MWDB repository.
 It requires `mwdblib[cli]` extras to be installed.
 
 ```console
@@ -76,7 +76,7 @@ with MWDB Core API.
 ## Using mwdblib with own MWDB Core instance
 
 Default API endpoint that is used by mwdblib is `https://mwdb.cert.pl/api/` service (CERT.pl MWDB instance), but
-mwdblib is enabled to work with self-hosted instances as well.
+mwdblib is able to work with self-hosted instances as well.
 
 You can pass alternative MWDB endpoint via `api_url` parameter
 
@@ -109,4 +109,4 @@ That configuration applies to the `MWDB()` objects as well.
 
 Complete mwdblib API docs can be found here: https://mwdblib.readthedocs.io/en/latest/
 
-Additional guidelines according MWDB REST API and automation can be found in MWDB Core documentation: https://mwdb.readthedocs.io/en/latest/user-guide/8-REST-and-mwdblib.html
+Additional guidelines regarding MWDB REST API and automation can be found in MWDB Core documentation: https://mwdb.readthedocs.io/en/latest/user-guide/8-REST-and-mwdblib.html
