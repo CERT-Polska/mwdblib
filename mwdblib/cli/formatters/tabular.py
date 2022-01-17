@@ -1,3 +1,5 @@
+import json
+
 import beautifultable
 import click
 
@@ -218,7 +220,7 @@ class TabularFormatter(ObjectFormatter):
                 [
                     key,
                     AttributeFormatter(),
-                    "\n".join(value for value in attributes[key]),
+                    "\n".join(json.dumps(value) for value in attributes[key]),
                 ]
                 for key in sorted(attributes.keys())
             ]
