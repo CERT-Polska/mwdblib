@@ -51,6 +51,9 @@ class ObjectFormatter:
     def format_metakeys_list(self, metakeys):
         raise NotImplementedError()
 
+    def format_attributes_list(self, attributes):
+        raise NotImplementedError()
+
     def print_lines(self, lines):
         for line in lines:
             click.echo(line.rstrip("\n"))

@@ -1,4 +1,5 @@
 try:
+    from .attribute import attribute_command
     from .comment import comment_command
     from .fetch import fetch_command
     from .get import get_command
@@ -22,6 +23,7 @@ try:
         "login_command",
         "logout_command",
         "metakey_command",
+        "attribute_command",
         "search_command",
         "share_command",
         "tag_command",

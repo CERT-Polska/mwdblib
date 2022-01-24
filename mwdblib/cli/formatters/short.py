@@ -1,3 +1,5 @@
+import json
+
 import click
 
 from .abstract import ObjectFormatter
@@ -32,6 +34,11 @@ class ShortFormatter(ObjectFormatter):
         for key in sorted(metakeys.keys()):
             for value in metakeys[key]:
                 yield " ".join([key, value])
+
+    def format_attributes_list(self, attributes):
+        for key in sorted(attributes.keys()):
+            for value in attributes[key]:
+                yield " ".join([key, json.dumps(value)])
 
     def print_confirmation(self, **params):
         if "object_id" in params:
