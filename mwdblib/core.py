@@ -703,6 +703,8 @@ class MWDB:
         metakeys: Optional[Dict[str, Union[str, List[str]]]],
         attributes: Optional[Dict[str, Union[Any, List[Any]]]],
         tags: Optional[List[str]],
+        karton_id: Optional[str],
+        karton_arguments: Optional[Dict[str, str]],
         share_with: Optional[str],
         private: bool,
         public: bool,
@@ -729,6 +731,12 @@ class MWDB:
 
         _tags_param = {"tags": [{"tag": tag} for tag in tags]} if tags else {}
 
+        _karton_id_param = {"karton_id": karton_id} if karton_id else {}
+
+        _karton_arguments_param = (
+            {"karton_arguments": karton_arguments} if karton_arguments else {}
+        )
+
         if len([arg for arg in (share_with, private, public) if arg]) > 1:
             raise ValidationError(
                 "'share_with', 'private' and 'public' arguments are exclusive"
@@ -747,6 +755,8 @@ class MWDB:
             **_tags_param,
             **_metakeys_param,
             **_attributes_param,
+            **_karton_id_param,
+            **_karton_arguments_param,
         }
 
     def upload_file(
@@ -756,6 +766,8 @@ class MWDB:
         parent: Optional[Union[MWDBObject, str]] = None,
         metakeys: Optional[Dict[str, Union[str, List[str]]]] = None,
         attributes: Optional[Dict[str, Union[Any, List[Any]]]] = None,
+        karton_id: Optional[str] = None,
+        karton_arguments: Optional[Dict[str, str]] = None,
         tags: Optional[List[str]] = None,
         share_with: Optional[str] = None,
         private: bool = False,
@@ -777,6 +789,11 @@ class MWDB:
             If you want to set many values with the same key: use list as value.
             Attributes support object values that are JSON-serializable.
         :type attributes: dict, optional
+        :param karton_id: Karton analysis identifier to be attached
+            to the uploaded file
+        :type karton_id: str, optional
+        :param karton_arguments: Karton analysis arguments. Reserved for future.
+        :type karton_arguments: dict, optional
         :param tags: Dictionary with tags to be set after upload.
         :type tags: list, optional
         :param share_with: Group name you want to share object with
@@ -791,6 +808,11 @@ class MWDB:
             Added ``attributes`` and ``tags`` arguments.
             They are supported by MWDB Core >= 2.6.0, use ``metakeys``
             if your MWDB Core version is older.
+
+        .. versionadded:: 4.1.0
+            Added ``karton_id`` and ``karton_arguments`` parameters.
+            Use ``karton_id`` instead of ``metakeys={"karton": "<id>"}`` if
+            you use MWDB Core >= 2.3.0
 
         Usage example:
 
@@ -813,6 +835,8 @@ class MWDB:
                             parent=parent,
                             metakeys=metakeys,
                             attributes=attributes,
+                            karton_id=karton_id,
+                            karton_arguments=karton_arguments,
                             tags=tags,
                             share_with=share_with,
                             private=private,
@@ -832,6 +856,8 @@ class MWDB:
         parent: Optional[Union[MWDBObject, str]] = None,
         metakeys: Optional[Dict[str, Union[str, List[str]]]] = None,
         attributes: Optional[Dict[str, Union[Any, List[Any]]]] = None,
+        karton_id: Optional[str] = None,
+        karton_arguments: Optional[Dict[str, str]] = None,
         tags: Optional[List[str]] = None,
         share_with: Optional[str] = None,
         private: bool = False,
@@ -856,6 +882,11 @@ class MWDB:
             If you want to set many values with the same key: use list as value.
             Attributes support object values that are JSON-serializable.
         :type attributes: dict, optional
+        :param karton_id: Karton analysis identifier to be attached
+            to the uploaded file
+        :type karton_id: str, optional
+        :param karton_arguments: Karton analysis arguments. Reserved for future.
+        :type karton_arguments: dict, optional
         :param tags: Dictionary with tags to be set after upload.
         :type tags: list, optional
         :param share_with: Group name you want to share object with
@@ -870,6 +901,11 @@ class MWDB:
             Added ``attributes`` and ``tags`` arguments.
             They are supported by MWDB Core >= 2.6.0, use ``metakeys``
             if your MWDB Core version is older.
+
+        .. versionadded:: 4.1.0
+            Added ``karton_id`` and ``karton_arguments`` parameters.
+            Use ``karton_id`` instead of ``metakeys={"karton": "<id>"}`` if
+            you use MWDB Core >= 2.3.0
 
         .. code-block:: python
 
@@ -892,6 +928,8 @@ class MWDB:
                 parent=parent,
                 metakeys=metakeys,
                 attributes=attributes,
+                karton_id=karton_id,
+                karton_arguments=karton_arguments,
                 tags=tags,
                 share_with=share_with,
                 private=private,
@@ -909,6 +947,8 @@ class MWDB:
         parent: Optional[Union[MWDBObject, str]] = None,
         metakeys: Optional[Dict[str, Union[str, List[str]]]] = None,
         attributes: Optional[Dict[str, Union[Any, List[Any]]]] = None,
+        karton_id: Optional[str] = None,
+        karton_arguments: Optional[Dict[str, str]] = None,
         tags: Optional[List[str]] = None,
         share_with: Optional[str] = None,
         private: bool = False,
@@ -932,6 +972,11 @@ class MWDB:
             If you want to set many values with the same key: use list as value.
             Attributes support object values that are JSON-serializable.
         :type attributes: dict, optional
+        :param karton_id: Karton analysis identifier to be attached
+            to the uploaded file
+        :type karton_id: str, optional
+        :param karton_arguments: Karton analysis arguments. Reserved for future.
+        :type karton_arguments: dict, optional
         :param tags: Dictionary with tags to be set after upload.
         :type tags: list, optional
         :param share_with: Group name you want to share object with
@@ -946,6 +991,11 @@ class MWDB:
             Added ``attributes`` and ``tags`` arguments.
             They are supported by MWDB Core >= 2.6.0, use ``metakeys``
             if your MWDB Core version is older.
+
+        .. versionadded:: 4.1.0
+            Added ``karton_id`` and ``karton_arguments`` parameters.
+            Use ``karton_id`` instead of ``metakeys={"karton": "<id>"}`` if
+            you use MWDB Core >= 2.3.0
         """
         params = {"blob_name": name, "blob_type": type, "content": content}
         params.update(
@@ -953,6 +1003,8 @@ class MWDB:
                 parent=parent,
                 metakeys=metakeys,
                 attributes=attributes,
+                karton_id=karton_id,
+                karton_arguments=karton_arguments,
                 tags=tags,
                 share_with=share_with,
                 private=private,
