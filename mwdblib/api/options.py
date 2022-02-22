@@ -56,6 +56,19 @@ class OptionsField:
 
 
 class APIClientOptions:
+    """
+    Options bag that contains configuration for APIClient.
+
+    Field values are loaded using the following precedence:
+
+    - built-in defaults accessible via class properties e.g. ``APIClientOptions.api_url``
+    - values from ``~/.mwdb`` configuration file
+    - values passed as an arguments to the ``APIClientOptions`` constructor
+
+    Configuration may depend on ``api_url`` value, so remember to set it if you want to
+    talk with specific MWDB Core instance.
+    """
+
     # Register fields and defaults
     api_url = OptionsField("https://mwdb.cert.pl/api/")
     api_key = OptionsField(value_type=str)

@@ -1,5 +1,5 @@
 from .__version__ import __version__
-from .api import APIClient
+from .api import APIClient, APIClientOptions
 from .blob import MWDBBlob
 from .comment import MWDBComment
 from .config import MWDBConfig
@@ -11,6 +11,7 @@ from .util import config_dhash
 __all__ = [
     "MWDB",
     "APIClient",
+    "APIClientOptions",
     "MWDBFile",
     "MWDBObject",
     "MWDBConfig",

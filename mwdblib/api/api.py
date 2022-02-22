@@ -83,7 +83,7 @@ class APIClient:
         ] = f'mwdblib/{__version__} {self.session.headers["User-Agent"]}'
 
         if _auth_token:
-            self.set_auth_token(_auth_token)
+            self._set_auth_token(_auth_token)
         if self.options.api_key:
             self.set_api_key(self.options.api_key)
         elif self.options.username and self.options.password:
@@ -91,43 +91,81 @@ class APIClient:
 
     @property
     def server_metadata(self) -> dict:
+        """
+        Information about MWDB Core server from ``/api/server`` endpoint.
+        """
         if self._server_metadata is None:
             self._server_metadata = self.get("server", noauth=True)
         return self._server_metadata
 
     @property
     def server_version(self) -> str:
+        """
+        MWDB Core server version
+        """
         return str(self.server_metadata["server_version"])
 
     @property
     def logged_user(self) -> Optional[str]:
+        """
+        Username of logged-in user or the owner of used API key.
+        Returns None if no credentials are provided
+        """
         return self.auth_token.username if self.auth_token else None
 
-    def set_auth_token(self, auth_key: str) -> None:
+    def supports_version(self, required_version):
+        """
+        Checks if server version is higher or equal than provided.
+        """
+        return parse_version(self.server_version) >= parse_version(required_version)
+
+    def _set_auth_token(self, auth_key: str) -> None:
         self.auth_token = JWTAuthToken(auth_key)
         self.session.headers.update(
             {"Authorization": f"Bearer {self.auth_token.value}"}
         )
 
     def login(self, username: str, password: str) -> None:
+        """
+        Performs authentication using provided credentials
+
+        .. note:
+            It's not recommended to use this method directly.
+            Use :py:meth:`MWDB.login` instead.
+
+        :param username: Account username
+        :param password: Account password
+        """
         token = self.post(
             "auth/login", json={"login": username, "password": password}, noauth=True
         )["token"]
-        self.set_auth_token(token)
+        self._set_auth_token(token)
         # Store credentials in API options
         self.options.username = username
         self.options.password = password
 
     def set_api_key(self, api_key: str) -> None:
-        self.set_auth_token(api_key)
+        """
+        Sets API key to be used for authorization
+
+        .. note:
+            It's not recommended to use this method directly.
+            Pass ``api_key`` argument to ``MWDB`` constructor.
+
+        :param api_key: API key to set
+        """
+        self._set_auth_token(api_key)
         # Store credentials in API options
         self.options.api_key = api_key
 
     def logout(self) -> None:
+        """
+        Removes authorization token from APIClient instance
+        """
         self.auth_token = None
         self.session.headers.pop("Authorization")
 
-    def perform_request(
+    def _perform_request(
         self, method: str, url: str, *args: Any, **kwargs: Any
     ) -> requests.models.Response:
         try:
@@ -150,9 +188,20 @@ class APIClient:
         **kwargs: Any,
     ) -> Any:
         """
-        Sends request to MWDB API.
+        Sends request to MWDB API. This method can be used for accessing features that
+        are not directly supported by mwdblib library.
 
         Other keyword arguments are the same as in requests library.
+
+        .. seealso::
+
+            Use functions specific for HTTP methods instead of passing
+            ``method`` argument on your own:
+
+            - :py:meth:`APIClient.get`
+            - :py:meth:`APIClient.post`
+            - :py:meth:`APIClient.put`
+            - :py:meth:`APIClient.delete`
 
         :param method: HTTP method
         :param url: Relative url of API endpoint
@@ -179,7 +228,7 @@ class APIClient:
 
         while True:
             try:
-                response = self.perform_request(method, url, *args, **kwargs)
+                response = self._perform_request(method, url, *args, **kwargs)
                 try:
                     return response.json() if not raw else response.content
                 except ValueError:

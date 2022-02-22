@@ -8,3 +8,6 @@ Core interface (MWDB)
 
 .. autoclass:: APIClient
     :members:
+
+.. autoclass:: APIClientOptions
+    :members:
