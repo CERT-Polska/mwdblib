@@ -358,7 +358,8 @@ class MWDBObject(MWDBElement):
         if type(value) is not str:
             raise TypeError(
                 "Value types other than 'str' are not supported by this API."
-                "Check version of MWDB Core server or use add_attribute instead of add_metakey."
+                "Check version of MWDB Core server or use add_attribute instead "
+                "of add_metakey."
             )
         self.api.post(
             "object/{id}/meta".format(**self.data), json={"key": key, "value": value}
