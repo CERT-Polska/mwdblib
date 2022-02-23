@@ -56,6 +56,20 @@ class OptionsField:
 
 
 class APIClientOptions:
+    """
+    Options bag that contains configuration for APIClient.
+
+    Field values are loaded using the following precedence:
+
+    - built-in defaults accessible via class properties e.g.
+      ``APIClientOptions.api_url``
+    - values from ``~/.mwdb`` configuration file
+    - values passed as an arguments to the ``APIClientOptions`` constructor
+
+    Configuration may depend on ``api_url`` value, so remember to set it if you want to
+    talk with specific MWDB Core instance.
+    """
+
     # Register fields and defaults
     api_url = OptionsField("https://mwdb.cert.pl/api/")
     api_key = OptionsField(value_type=str)
@@ -146,8 +160,9 @@ class APIClientOptions:
 
     def clear_stored_credentials(self, config_writeback: bool = True) -> None:
         """
-        Clears stored credentials in configuration for current user
-        Used by `mwdb logout` CLI command
+        Clears stored credentials in configuration for current user.
+
+        Used by ``mwdb logout`` CLI command.
         """
         if not self.username:
             return
@@ -176,8 +191,9 @@ class APIClientOptions:
 
     def store_credentials(self) -> None:
         """
-        Stores current credentials in configuration for current user
-        Used by `mwdb login` CLI command
+        Stores current credentials in configuration for current user.
+
+        Used by ``mwdb login`` CLI command.
         """
         if not self.username or (not self.api_key and not self.password):
             return

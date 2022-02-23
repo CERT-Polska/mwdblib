@@ -91,17 +91,35 @@ class APIClient:
 
     @property
     def server_metadata(self) -> dict:
+        """
+        Information about MWDB Core server from ``/api/server`` endpoint.
+        """
         if self._server_metadata is None:
             self._server_metadata = self.get("server", noauth=True)
         return self._server_metadata
 
     @property
     def server_version(self) -> str:
+        """
+        MWDB Core server version
+        """
         return str(self.server_metadata["server_version"])
 
     @property
     def logged_user(self) -> Optional[str]:
+        """
+        Username of logged-in user or the owner of used API key.
+        Returns None if no credentials are provided
+        """
         return self.auth_token.username if self.auth_token else None
+
+    def supports_version(self, required_version: str) -> bool:
+        """
+        Checks if server version is higher or equal than provided.
+
+        .. versionadded:: 4.1.0
+        """
+        return parse_version(self.server_version) >= parse_version(required_version)
 
     def set_auth_token(self, auth_key: str) -> None:
         self.auth_token = JWTAuthToken(auth_key)
@@ -110,6 +128,16 @@ class APIClient:
         )
 
     def login(self, username: str, password: str) -> None:
+        """
+        Performs authentication using provided credentials
+
+        .. note:
+            It's not recommended to use this method directly.
+            Use :py:meth:`MWDB.login` instead.
+
+        :param username: Account username
+        :param password: Account password
+        """
         token = self.post(
             "auth/login", json={"login": username, "password": password}, noauth=True
         )["token"]
@@ -119,11 +147,23 @@ class APIClient:
         self.options.password = password
 
     def set_api_key(self, api_key: str) -> None:
+        """
+        Sets API key to be used for authorization
+
+        .. note:
+            It's not recommended to use this method directly.
+            Pass ``api_key`` argument to ``MWDB`` constructor.
+
+        :param api_key: API key to set
+        """
         self.set_auth_token(api_key)
         # Store credentials in API options
         self.options.api_key = api_key
 
     def logout(self) -> None:
+        """
+        Removes authorization token from APIClient instance
+        """
         self.auth_token = None
         self.session.headers.pop("Authorization")
 
@@ -150,9 +190,20 @@ class APIClient:
         **kwargs: Any,
     ) -> Any:
         """
-        Sends request to MWDB API.
+        Sends request to MWDB API. This method can be used for accessing features that
+        are not directly supported by mwdblib library.
 
         Other keyword arguments are the same as in requests library.
+
+        .. seealso::
+
+            Use functions specific for HTTP methods instead of passing
+            ``method`` argument on your own:
+
+            - :py:meth:`APIClient.get`
+            - :py:meth:`APIClient.post`
+            - :py:meth:`APIClient.put`
+            - :py:meth:`APIClient.delete`
 
         :param method: HTTP method
         :param url: Relative url of API endpoint
