@@ -61,7 +61,8 @@ class APIClientOptions:
 
     Field values are loaded using the following precedence:
 
-    - built-in defaults accessible via class properties e.g. ``APIClientOptions.api_url``
+    - built-in defaults accessible via class properties e.g.
+      ``APIClientOptions.api_url``
     - values from ``~/.mwdb`` configuration file
     - values passed as an arguments to the ``APIClientOptions`` constructor
 

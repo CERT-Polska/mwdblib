@@ -42,17 +42,21 @@ class MWDB:
         If ``True``, library will transparently handle them by sleeping
         for a specified duration. Default is ``True``.
     :param retry_on_downtime: If ``True``, requests will be automatically retried
-        after ``downtime_timeout`` seconds on HTTP 502/504 and ConnectionError. Default is ``False``.
+        after ``downtime_timeout`` seconds on HTTP 502/504 and ConnectionError.
+        Default is ``False``.
     :param max_downtime_retries: Number of retries caused by temporary downtime
-    :param downtime_timeout: How long we need to wait between retries (in seconds). Default is 10.
+    :param downtime_timeout: How long we need to wait between retries (in seconds).
+        Default is 10.
     :param retry_idempotent: Retry idempotent POST requests (default).
         The only thing that is really non-idempotent in current API is
         :meth:`MWDBObject.add_comment`, so it's not a big deal. You can turn it off
         if possible doubled comments are problematic in your MWDB instance.
         Default is ``True``.
     :param use_keyring: If ``True``, APIClient uses keyring to fetch
-        stored credentials. If not, they're fetched from plaintext configuration. Default is ``True``.
-    :param emit_warnings: If ``True``, warnings are emitted by APIClient. Default is ``True``.
+        stored credentials. If not, they're fetched from plaintext configuration.
+        Default is ``True``.
+    :param emit_warnings: If ``True``, warnings are emitted by APIClient.
+        Default is ``True``.
     :param config_path: Path to the configuration file (default is `~/.mwdb`).
         If None, configuration file will not be used by APIClient
     :param api: Custom :class:`APIClient` to be used for communication with MWDB
