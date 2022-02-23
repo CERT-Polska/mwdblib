@@ -83,7 +83,7 @@ class APIClient:
         ] = f'mwdblib/{__version__} {self.session.headers["User-Agent"]}'
 
         if _auth_token:
-            self._set_auth_token(_auth_token)
+            self.set_auth_token(_auth_token)
         if self.options.api_key:
             self.set_api_key(self.options.api_key)
         elif self.options.username and self.options.password:
@@ -121,7 +121,7 @@ class APIClient:
         """
         return parse_version(self.server_version) >= parse_version(required_version)
 
-    def _set_auth_token(self, auth_key: str) -> None:
+    def set_auth_token(self, auth_key: str) -> None:
         self.auth_token = JWTAuthToken(auth_key)
         self.session.headers.update(
             {"Authorization": f"Bearer {self.auth_token.value}"}
@@ -141,7 +141,7 @@ class APIClient:
         token = self.post(
             "auth/login", json={"login": username, "password": password}, noauth=True
         )["token"]
-        self._set_auth_token(token)
+        self.set_auth_token(token)
         # Store credentials in API options
         self.options.username = username
         self.options.password = password
@@ -156,7 +156,7 @@ class APIClient:
 
         :param api_key: API key to set
         """
-        self._set_auth_token(api_key)
+        self.set_auth_token(api_key)
         # Store credentials in API options
         self.options.api_key = api_key
 
@@ -167,7 +167,7 @@ class APIClient:
         self.auth_token = None
         self.session.headers.pop("Authorization")
 
-    def _perform_request(
+    def perform_request(
         self, method: str, url: str, *args: Any, **kwargs: Any
     ) -> requests.models.Response:
         try:
@@ -230,7 +230,7 @@ class APIClient:
 
         while True:
             try:
-                response = self._perform_request(method, url, *args, **kwargs)
+                response = self.perform_request(method, url, *args, **kwargs)
                 try:
                     return response.json() if not raw else response.content
                 except ValueError:
