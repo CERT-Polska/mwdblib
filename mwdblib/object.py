@@ -354,10 +354,13 @@ class MWDBObject(MWDBElement):
         self._expire("metakeys")
 
     @add_attribute.fallback("2.0.0")
+    def add_attribute_fallback(self, key: str, value: str) -> None:
+        self._add_metakey(key, value)
+
     def _add_metakey(self, key: str, value: str) -> None:
         if type(value) is not str:
             raise TypeError(
-                "Value types other than 'str' are not supported by this API."
+                "Value types other than 'str' are not supported by this API. "
                 "Check version of MWDB Core server or use add_attribute instead "
                 "of add_metakey."
             )
@@ -379,10 +382,15 @@ class MWDBObject(MWDBElement):
         :param value: Attribute value
         :type value: str
         """
+        warnings.warn(
+            "'add_metakey' method is deprecated, use 'add_attribute' instead",
+            DeprecationWarning,
+        )
         if key == "karton":
             warnings.warn(
                 "'karton' attribute key is deprecated for assigning an analysis. "
-                "Use 'assign_analysis' method instead."
+                "Use 'assign_analysis' method instead.",
+                DeprecationWarning,
             )
         self._add_metakey(key, value)
 
