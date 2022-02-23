@@ -159,8 +159,9 @@ class APIClientOptions:
 
     def clear_stored_credentials(self, config_writeback: bool = True) -> None:
         """
-        Clears stored credentials in configuration for current user
-        Used by `mwdb logout` CLI command
+        Clears stored credentials in configuration for current user.
+
+        Used by ``mwdb logout`` CLI command.
         """
         if not self.username:
             return
@@ -189,8 +190,9 @@ class APIClientOptions:
 
     def store_credentials(self) -> None:
         """
-        Stores current credentials in configuration for current user
-        Used by `mwdb login` CLI command
+        Stores current credentials in configuration for current user.
+
+        Used by ``mwdb login`` CLI command.
         """
         if not self.username or (not self.api_key and not self.password):
             return
