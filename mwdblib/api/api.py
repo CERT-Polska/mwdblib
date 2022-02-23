@@ -113,9 +113,11 @@ class APIClient:
         """
         return self.auth_token.username if self.auth_token else None
 
-    def supports_version(self, required_version):
+    def supports_version(self, required_version: str) -> bool:
         """
         Checks if server version is higher or equal than provided.
+
+        .. versionadded:: 4.1.0
         """
         return parse_version(self.server_version) >= parse_version(required_version)
 
