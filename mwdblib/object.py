@@ -1,4 +1,5 @@
 import datetime
+import warnings
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union, cast
 
@@ -161,22 +162,38 @@ class MWDBObject(MWDBElement):
             )
         return [MWDBShare(self.api, share, self) for share in self.data["shares"]]
 
-    @property  # type: ignore
     @APIClient.requires("2.6.0")
+    def _get_attributes(self) -> Dict[str, List[Any]]:
+        if "attributes" not in self.data:
+            self._load("object/{id}/attribute")
+        result = defaultdict(list)
+        for m in self.data["attributes"]:
+            result[m["key"]].append(m["value"])
+        return dict(result)
+
+    @_get_attributes.fallback("2.0.0")
+    def _get_attributes_fallback(self) -> Dict[str, List[Any]]:
+        # Fallback to older metakey API
+        return self._get_metakeys()
+
+    @property
     def attributes(self) -> Dict[str, List[Any]]:
         """
         Returns dict object with attributes.
 
-        Requires MWDB Core >= 2.6.0.
+        Supports JSON-like values in MWDB Core >= 2.6.0.
 
         .. versionadded:: 4.0.0
 
         :return: Dict object containing attributes
         """
-        if "attributes" not in self.data:
-            self._load("object/{id}/attribute")
+        return cast(Dict[str, List[Any]], self._get_attributes())
+
+    def _get_metakeys(self) -> Dict[str, List[str]]:
+        if "metakeys" not in self.data:
+            self._load("object/{id}/meta")
         result = defaultdict(list)
-        for m in self.data["attributes"]:
+        for m in self.data["metakeys"]:
             result[m["key"]].append(m["value"])
         return dict(result)
 
@@ -185,17 +202,18 @@ class MWDBObject(MWDBElement):
         """
         Returns dict object with metakeys.
 
+        JSON-like values are coerced to strings for backwards compatibility.
+
         .. deprecated:: 4.0.0
-           For MWDB Core >=2.6.0 use :py:attr:`attributes` instead
+           Use :py:attr:`attributes` instead
 
         :return: Dict object containing metakey attributes
         """
-        if "metakeys" not in self.data:
-            self._load("object/{id}/meta")
-        result = defaultdict(list)
-        for m in self.data["metakeys"]:
-            result[m["key"]].append(m["value"])
-        return dict(result)
+        warnings.warn(
+            "'metakeys' attribute is deprecated. Use 'attributes' instead.",
+            DeprecationWarning,
+        )
+        return self._get_metakeys()
 
     @property
     def upload_time(self) -> "datetime.datetime":
@@ -310,9 +328,10 @@ class MWDBObject(MWDBElement):
     @APIClient.requires("2.6.0")
     def add_attribute(self, key: str, value: Any) -> None:
         """
-        Adds attribute
+        Adds attribute.
 
-        Requires MWDB Core >= 2.6.0.
+        Key can't be 'karton'. If you want to assign an analysis,
+        use :py:meth:`assign_analysis` instead or use :py:meth:`add_metakey` method.
 
         .. versionadded:: 4.0.0
 
@@ -321,28 +340,59 @@ class MWDBObject(MWDBElement):
         :param value: Attribute value
         :type value: Any (JSON-like object)
         """
+        if key == "karton":
+            # This will fallback to add_metakey
+            raise ValueError(
+                "'karton' attribute key is no longer supported."
+                "Use 'assign_analysis' method instead."
+            )
         self.api.post(
             "object/{id}/attribute".format(**self.data),
             json={"key": key, "value": value},
         )
         self._expire("attributes")
+        self._expire("metakeys")
+
+    @add_attribute.fallback("2.0.0")
+    def add_attribute_fallback(self, key: str, value: str) -> None:
+        self._add_metakey(key, value)
+
+    def _add_metakey(self, key: str, value: str) -> None:
+        if type(value) is not str:
+            raise TypeError(
+                "Value types other than 'str' are not supported by this API. "
+                "Check version of MWDB Core server or use add_attribute instead "
+                "of add_metakey."
+            )
+        self.api.post(
+            "object/{id}/meta".format(**self.data), json={"key": key, "value": value}
+        )
+        self._expire("attributes")
+        self._expire("metakeys")
 
     def add_metakey(self, key: str, value: str) -> None:
         """
-        Adds metakey attribute
+        Adds metakey attribute (string only)
 
         .. deprecated:: 4.0.0
-           For MWDB Core >=2.6.0 use :py:attr:`add_attribute` instead
+           Use :py:attr:`add_attribute` instead
 
         :param key: Attribute key
         :type key: str
         :param value: Attribute value
         :type value: str
         """
-        self.api.post(
-            "object/{id}/meta".format(**self.data), json={"key": key, "value": value}
+        warnings.warn(
+            "'add_metakey' method is deprecated, use 'add_attribute' instead",
+            DeprecationWarning,
         )
-        self._expire("metakeys")
+        if key == "karton":
+            warnings.warn(
+                "'karton' attribute key is deprecated for assigning an analysis. "
+                "Use 'assign_analysis' method instead.",
+                DeprecationWarning,
+            )
+        self._add_metakey(key, value)
 
     @APIClient.requires("2.3.0")
     def reanalyze(
