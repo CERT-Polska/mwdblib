@@ -172,7 +172,7 @@ class MWDBObject(MWDBElement):
         return dict(result)
 
     @APIClient.requires("2.6.0")
-    def get_attributes_detailed(self) -> Dict[str, List[Any]]:
+    def get_attributes_detailed(self) -> Any:
         if "attributes" not in self.data:
             self._load("object/{id}/attribute")
         return self.data["attributes"]
