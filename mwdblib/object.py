@@ -171,6 +171,12 @@ class MWDBObject(MWDBElement):
             result[m["key"]].append(m["value"])
         return dict(result)
 
+    @APIClient.requires("2.6.0")
+    def get_attributes_detailed(self) -> Dict[str, List[Any]]:
+        if "attributes" not in self.data:
+            self._load("object/{id}/attribute")
+        return self.data["attributes"]
+
     @_get_attributes.fallback("2.0.0")
     def _get_attributes_fallback(self) -> Dict[str, List[Any]]:
         # Fallback to older metakey API
@@ -352,6 +358,21 @@ class MWDBObject(MWDBElement):
         )
         self._expire("attributes")
         self._expire("metakeys")
+
+    @APIClient.requires("2.6.0")
+    def remove_attribute(self, attribute_id: int) -> None:
+        """
+        Remove specific attribute from object
+
+        :param attribute_id: Attribute id
+        :type attribute_id: int
+        """
+        self.api.delete(
+            "object/{id}/attribute/{attribute_id}".format(
+                id=self.id, attribute_id=attribute_id
+            )
+        )
+        self._expire("tags")
 
     @add_attribute.fallback("2.0.0")
     def add_attribute_fallback(self, key: str, value: str) -> None:
