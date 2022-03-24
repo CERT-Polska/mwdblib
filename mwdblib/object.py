@@ -374,7 +374,7 @@ class MWDBObject(MWDBElement):
         Remove specific attribute from object
 
         .. seealso::
-            IDs of attributes can be found by use this function: :meth:`get_attributes_detailed`
+            IDs of attributes can be found here: :meth:`get_attributes_detailed`
 
         :param attribute_id: Attribute id
         :type attribute_id: int
