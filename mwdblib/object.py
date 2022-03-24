@@ -172,10 +172,19 @@ class MWDBObject(MWDBElement):
         return dict(result)
 
     @APIClient.requires("2.6.0")
-    def get_attributes_detailed(self) -> Any:
+    def get_attributes_detailed(self) -> List[Dict[str, Any]]:
+        """
+        Returns list with details about attributes.
+
+        Supports JSON-like values in MWDB Core >= 2.6.0.
+
+        .. versionadded:: 4.1.0
+
+        :return: List containing detailed attributes
+        """
         if "attributes" not in self.data:
             self._load("object/{id}/attribute")
-        return self.data["attributes"]
+        return cast(List[Dict[str, Any]], self.data["attributes"])
 
     @_get_attributes.fallback("2.0.0")
     def _get_attributes_fallback(self) -> Dict[str, List[Any]]:
@@ -363,6 +372,9 @@ class MWDBObject(MWDBElement):
     def remove_attribute(self, attribute_id: int) -> None:
         """
         Remove specific attribute from object
+
+        .. seealso::
+            IDs of attributes can be found by use this function: :meth:`get_attributes_detailed`
 
         :param attribute_id: Attribute id
         :type attribute_id: int
