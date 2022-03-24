@@ -372,7 +372,7 @@ class MWDBObject(MWDBElement):
                 id=self.id, attribute_id=attribute_id
             )
         )
-        self._expire("tags")
+        self._expire("attributes")
 
     @add_attribute.fallback("2.0.0")
     def add_attribute_fallback(self, key: str, value: str) -> None:
