@@ -13,6 +13,7 @@ jobs:
       - uses: CERT-Polska/lint-python-action@v1
         with:
           source: mwdblib/
+          install-requirements: false
           extra-requirements: "types-requests keyring"
   test:
     runs-on: ubuntu-latest
