@@ -1,6 +1,6 @@
 import json
-
 import shutil
+
 import beautifultable
 import click
 
