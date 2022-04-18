@@ -1,4 +1,5 @@
 import json
+import shutil
 
 import beautifultable
 import click
@@ -17,7 +18,7 @@ from .attribute import (
 
 class TabularFormatter(ObjectFormatter):
     def format_attr_table(self, data):
-        term_width, term_height = click.get_terminal_size()
+        term_width, term_height = shutil.get_terminal_size()
         table = beautifultable.BeautifulTable(
             maxwidth=term_width, default_alignment=beautifultable.ALIGN_LEFT
         )
@@ -30,7 +31,7 @@ class TabularFormatter(ObjectFormatter):
         return str(table)
 
     def format_table(self, headers, widths, row_formatter, rows):
-        term_width, term_height = click.get_terminal_size()
+        term_width, term_height = shutil.get_terminal_size()
         table = beautifultable.BeautifulTable(
             maxwidth=term_width, default_alignment=beautifultable.ALIGN_LEFT
         )
