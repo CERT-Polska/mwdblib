@@ -1,5 +1,9 @@
 # mwdblib
 
+## [Installation ⚙️](#getting-started) | [Docs 📚](https://mwdblib.readthedocs.io/en/latest/) | [Guide 📕](https://mwdb.readthedocs.io/en/latest/user-guide/8-REST-and-mwdblib.html)
+
+---
+
 API bindings for [mwdb.cert.pl](https://mwdb.cert.pl) service or your own instance of [MWDB](https://github.com/CERT-Polska/mwdb-core).
 Use it if you want to automate data uploading/fetching from MWDB or have some ipython-based CLI.
 
