@@ -174,9 +174,10 @@ class MWDBObject(MWDBElement):
     @APIClient.requires("2.6.0")
     def get_attributes_detailed(self) -> List[Dict[str, Any]]:
         """
-        Returns list with details about attributes.
+        Returns list with attributes including identifiers needed to remove
+        specific attribute.
 
-        Supports JSON-like values in MWDB Core >= 2.6.0.
+        Requires MWDB Core >= 2.6.0.
 
         .. versionadded:: 4.1.0
 
