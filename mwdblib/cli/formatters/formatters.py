@@ -42,8 +42,8 @@ def pass_formatter(fn):
 
 
 def confirm_action(fn):
-    @functools.wraps(fn)
     @pass_formatter
+    @functools.wraps(fn)
     def wrapper(*args, **kwargs):
         formatter = kwargs["formatter"]
         del kwargs["formatter"]
