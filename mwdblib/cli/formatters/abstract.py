@@ -73,4 +73,4 @@ class ObjectFormatter:
         self.print_lines(list_formatter(objects))
 
     def print_confirmation(self, message, **params):
-        click.echo(message.format(**params))
+        click.echo(message.format(**params), err=True)
