@@ -249,5 +249,5 @@ class TabularFormatter(ObjectFormatter):
                     for k, v in params.items()
                 }
             ),
-            err=True
+            err=True,
         )
