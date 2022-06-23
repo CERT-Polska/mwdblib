@@ -388,7 +388,7 @@ class MWDBObject(MWDBElement):
         self._expire("attributes")
 
     @add_attribute.fallback("2.0.0")
-    def add_attribute_fallback(self, key: str, value: str) -> None:
+    def _add_attribute_fallback(self, key: str, value: str) -> None:
         self._add_metakey(key, value)
 
     def _add_metakey(self, key: str, value: str) -> None:

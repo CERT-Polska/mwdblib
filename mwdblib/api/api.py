@@ -5,7 +5,7 @@ import json
 import re
 import time
 import warnings
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, Type, cast
+from typing import Any, Callable, List, Optional, Tuple, Type, cast
 from urllib.parse import urljoin
 
 import requests
@@ -23,8 +23,15 @@ from ..exc import (
 )
 from .options import APIClientOptions
 
-if TYPE_CHECKING:
-    from .. import MWDB
+
+# TODO: Protocol typing is available from Python 3.8
+class UsesAPI:
+    """
+    Typing for classes that are bound with APIClient,
+    set on self.api attribute
+    """
+
+    api: "APIClient"
 
 
 class JWTAuthToken:
@@ -80,7 +87,7 @@ class APIClient:
 
         self.session.headers[
             "User-Agent"
-        ] = f'mwdblib/{__version__} {self.session.headers["User-Agent"]}'
+        ] = f'mwdblib/{__version__} {str(self.session.headers["User-Agent"])}'
 
         if _auth_token:
             self.set_auth_token(_auth_token)
@@ -314,7 +321,7 @@ class APIClient:
                 self.required_version = parse_version(required_version)
                 self.main_method = main_method
                 self.fallback_methods: List[Tuple[Tuple[int, ...], Callable]] = []
-                functools.update_wrapper(self, main_method)
+                functools.update_wrapper(self, self.main_method)
 
             def fallback(self, fallback_version: str) -> Callable:
                 """
@@ -328,28 +335,35 @@ class APIClient:
                         key=lambda e: e[0],
                         reverse=True,
                     )
-                    return self
+                    # Fallback method is still regular method
+                    # that can be called directly
+                    return fallback_method
 
                 return fallback_decorator
 
-            def __get__(self, mwdb: "MWDB", objtype: Type) -> Callable:
-                return functools.partial(self.__call__, mwdb)
+            def __get__(self, obj: UsesAPI, objtype: Type = None) -> Callable:
+                if objtype is not None:
+                    # If descriptor got from class and not from instance
+                    return self
+                wrapper = functools.partial(self.__call__, obj)
+                functools.update_wrapper(wrapper, self.main_method)
+                return wrapper
 
-            def __call__(self, mwdb: "MWDB", *args: Any, **kwargs: Any) -> Any:
+            def __call__(self, obj: UsesAPI, *args: Any, **kwargs: Any) -> Any:
                 # Check server version if available
                 server_version: Optional[Tuple[int, ...]]
-                if mwdb.api._server_metadata is not None or always_check_version:
-                    server_version = parse_version(mwdb.api.server_version)
+                if obj.api._server_metadata is not None or always_check_version:
+                    server_version = parse_version(obj.api.server_version)
                 else:
                     server_version = None
 
                 # If version available and matches the requirement: call main method
                 if server_version is None or server_version >= self.required_version:
                     try:
-                        return self.main_method(mwdb, *args, **kwargs)
+                        return self.main_method(obj, *args, **kwargs)
                     except EndpointNotFoundError:
                         # On EndpointNotFoundError, check version requirement
-                        server_version = parse_version(mwdb.api.server_version)
+                        server_version = parse_version(obj.api.server_version)
                         if server_version >= self.required_version:
                             # If matches the requirement: something wrong happened
                             raise
@@ -358,13 +372,13 @@ class APIClient:
                 fallback_version = self.required_version
                 for fallback_version, fallback_method in self.fallback_methods:
                     if server_version >= fallback_version:
-                        return fallback_method(mwdb, *args, **kwargs)
+                        return fallback_method(obj, *args, **kwargs)
                 else:
                     # If no fallback matched: raise VersionMismatchError
                     raise VersionMismatchError(
                         f"Required server version is "
                         f"'>={'.'.join(map(str, fallback_version))}' "
-                        f"but '{mwdb.api.server_version}' is installed"
+                        f"but '{obj.api.server_version}' is installed"
                     )
 
         return VersionDependentMethod
