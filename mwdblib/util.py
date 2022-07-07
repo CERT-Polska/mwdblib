@@ -42,7 +42,9 @@ def config_dhash(obj: Any) -> str:
         if isinstance(value, dict) and list(value.keys()) == ["in-blob"]:
             in_blob = value["in-blob"]
             if isinstance(in_blob, dict):
-                config[key]["in-blob"] = hashlib.sha256(
-                    convert_to_utf8(in_blob["content"])
-                ).hexdigest()
+                config[key] = {
+                    "in-blob": hashlib.sha256(
+                        convert_to_utf8(in_blob["content"])
+                    ).hexdigest()
+                }
     return _eval_config_dhash(config)
