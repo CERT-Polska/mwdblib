@@ -186,6 +186,16 @@ class VersionMismatchError(MWDBError):
     pass
 
 
+class ObjectTooLargeError(MWDBError):
+    """
+    Server signaled that the uploaded object is too large.
+
+    .. versionadded:: 4.3.0
+    """
+
+    pass
+
+
 def get_http_error_message(http_error: requests.exceptions.HTTPError) -> str:
     import json
 
@@ -230,6 +240,8 @@ def map_http_error(http_error: requests.exceptions.HTTPError) -> MWDBError:
         requests.codes.gateway_timeout,
     ]:
         return GatewayError(http_error=http_error)
+    elif http_error.response.status_code == requests.codes.request_entity_too_large:
+        return ObjectTooLargeError(http_error=http_error)
     else:
         # Other codes are classified as internal error
         return InternalError(http_error=http_error)
