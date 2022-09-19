@@ -30,8 +30,6 @@ class AuthError(MWDBError):
     Authentication error, raised on HTTP 401: Unauthorized.
     """
 
-    pass
-
 
 class ValidationError(MWDBError):
     """
@@ -46,23 +44,17 @@ class ValidationError(MWDBError):
     - Unexpected None's are provided as an argument
     """
 
-    pass
-
 
 class ObjectError(MWDBError):
     """
     Object error, raised when specified object cannot be accessed or uploaded.
     """
 
-    pass
-
 
 class PermissionError(MWDBError):
     """
     Permission error, raised when permissions are unsufficient (HTTP 403: Forbidden).
     """
-
-    pass
 
 
 class LimitExceededError(MWDBError):
@@ -78,15 +70,11 @@ class BadResponseError(MWDBError):
     Probably APIClient.api_url points to the MWDB web app instead of MWDB REST API.
     """
 
-    pass
-
 
 class InternalError(MWDBError):
     """
-    Internal error. Something really bad occurred on the server side.
+    Internal error. Something bad occurred on the server side.
     """
-
-    pass
 
 
 class GatewayError(MWDBError):
@@ -102,15 +90,11 @@ class NotAuthenticatedError(AuthError):
     Use :py:meth:`MWDB.login` or set API key.
     """
 
-    pass
-
 
 class InvalidCredentialsError(AuthError):
     """
     Provided wrong password, API key has wrong format or was revoked.
     """
-
-    pass
 
 
 class UserPendingError(AuthError):
@@ -118,15 +102,11 @@ class UserPendingError(AuthError):
     User has just been registered and is waiting for acceptance.
     """
 
-    pass
-
 
 class UserDisabledError(AuthError):
     """
     User is banned. Contact your administrator for more information.
     """
-
-    pass
 
 
 class MaintenanceUnderwayError(AuthError):
@@ -134,15 +114,11 @@ class MaintenanceUnderwayError(AuthError):
     MWDB has been turned into maintenance mode. Try again later.
     """
 
-    pass
-
 
 class ObjectNotFoundError(ObjectError):
     """
     Object is not found, because it doesn't exist or you are not permitted to access it.
     """
-
-    pass
 
 
 class TypeConflictError(ObjectError):
@@ -157,7 +133,14 @@ class TypeConflictError(ObjectError):
     (not an empty file or single string).
     """
 
-    pass
+
+class ObjectTooLargeError(ObjectError):
+    """
+    Object too large error. Raised when size of an object you try to upload exceeds
+    the limit set in MWDB.
+
+    .. versionadded:: 4.3.0
+    """
 
 
 class EndpointNotFoundError(MWDBError):
@@ -172,8 +155,6 @@ class EndpointNotFoundError(MWDBError):
     .. versionadded:: 4.0.0
     """
 
-    pass
-
 
 class VersionMismatchError(MWDBError):
     """
@@ -182,8 +163,6 @@ class VersionMismatchError(MWDBError):
 
     .. versionadded:: 4.0.0
     """
-
-    pass
 
 
 def get_http_error_message(http_error: requests.exceptions.HTTPError) -> str:
@@ -225,6 +204,8 @@ def map_http_error(http_error: requests.exceptions.HTTPError) -> MWDBError:
         return TypeConflictError(http_error=http_error)
     elif http_error.response.status_code == requests.codes.too_many_requests:
         return LimitExceededError(http_error=http_error)
+    elif http_error.response.status_code == requests.codes.request_entity_too_large:
+        return ObjectTooLargeError(http_error=http_error)
     elif http_error.response.status_code in [
         requests.codes.bad_gateway,
         requests.codes.gateway_timeout,
