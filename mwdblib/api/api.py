@@ -5,6 +5,7 @@ import json
 import re
 import time
 import warnings
+from types import MethodType
 from typing import Any, Callable, List, Optional, Tuple, Type, cast
 from urllib.parse import urljoin
 
@@ -342,12 +343,12 @@ class APIClient:
                 return fallback_decorator
 
             def __get__(self, obj: UsesAPI, objtype: Type = None) -> Callable:
-                if objtype is not None:
+                # See also:
+                # https://docs.python.org/3/howto/descriptor.html#functions-and-methods
+                if obj is None:
                     # If descriptor got from class and not from instance
                     return self
-                wrapper = functools.partial(self.__call__, obj)
-                functools.update_wrapper(wrapper, self.main_method)
-                return wrapper
+                return MethodType(self, obj)
 
             def __call__(self, obj: UsesAPI, *args: Any, **kwargs: Any) -> Any:
                 # Check server version if available
