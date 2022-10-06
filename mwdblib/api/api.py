@@ -77,9 +77,21 @@ class APIClient:
         mwdb.api.delete(f'object/{sha256}')
     """
 
-    def __init__(self, _auth_token: Optional[str] = None, **api_options: Any) -> None:
+    def __init__(
+        self,
+        _auth_token: Optional[str] = None,
+        autologin: bool = True,
+        **api_options: Any,
+    ) -> None:
         self.options: APIClientOptions = APIClientOptions(**api_options)
         self.auth_token: Optional[JWTAuthToken] = None
+
+        # These state variables will be filled after
+        # successful authentication
+        self.username: Optional[str] = None
+        self.password: Optional[str] = None
+        self.api_key: Optional[str] = None
+
         self._server_metadata: Optional[dict] = None
 
         self.session: requests.Session = requests.Session()
@@ -92,10 +104,12 @@ class APIClient:
 
         if _auth_token:
             self.set_auth_token(_auth_token)
-        if self.options.api_key:
-            self.set_api_key(self.options.api_key)
-        elif self.options.username and self.options.password:
-            self.login(self.options.username, self.options.password)
+
+        if autologin:
+            if self.options.api_key:
+                self.set_api_key(self.options.api_key)
+            elif self.options.username and self.options.password:
+                self.login(self.options.username, self.options.password)
 
     @property
     def server_metadata(self) -> dict:
@@ -150,9 +164,9 @@ class APIClient:
             "auth/login", json={"login": username, "password": password}, noauth=True
         )["token"]
         self.set_auth_token(token)
-        # Store credentials in API options
-        self.options.username = username
-        self.options.password = password
+        # Store credentials in API state
+        self.username = username
+        self.password = password
 
     def set_api_key(self, api_key: str) -> None:
         """
@@ -165,10 +179,10 @@ class APIClient:
         :param api_key: API key to set
         """
         self.set_auth_token(api_key)
-        # Store credentials in API options
-        self.options.api_key = api_key
+        # Store credentials in API state
+        self.api_key = api_key
         if self.auth_token is not None:
-            self.options.username = self.auth_token.username
+            self.username = self.auth_token.username
 
     def logout(self) -> None:
         """
@@ -253,10 +267,10 @@ class APIClient:
                 # Forget current auth_key
                 self.logout()
                 # If no password set: re-raise
-                if self.options.password is None:
+                if self.username is None or self.password is None:
                     raise
                 # Try to log in
-                self.login(self.options.username, self.options.password)
+                self.login(self.username, self.password)
                 # Retry failed request...
             except LimitExceededError as e:
                 if not self.options.obey_ratelimiter:

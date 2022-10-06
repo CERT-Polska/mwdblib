@@ -219,11 +219,13 @@ class APIClientOptions:
                 keyring.set_password(
                     f"mwdb:{self.api_url}", self.username, self.password
                 )
+            self.config_parser.set(instance_section, "use_keyring", "1")
         else:
             if self.api_key:
                 self.config_parser.set(instance_section, "api_key", self.api_key)
             else:
                 self.config_parser.set(instance_section, "password", self.password)
+            self.config_parser.set(instance_section, "use_keyring", "0")
         # Perform configuration writeback
         if self.config_path:
             with self.config_path.open("w") as f:
