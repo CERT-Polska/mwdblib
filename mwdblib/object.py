@@ -387,6 +387,17 @@ class MWDBObject(MWDBElement):
         )
         self._expire("attributes")
 
+    @APIClient.requires("2.6.0")
+    def remove_comment(self, comment_id: int) -> None:
+        """
+        Remove specific comment from object
+
+        :param comment_id: Comment id
+        :type comment_id: int
+        """
+        self.api.delete(f"object/{self.id}/comment/{comment_id}")
+        self._expire("comments")
+
     @add_attribute.fallback("2.0.0")
     def _add_attribute_fallback(self, key: str, value: str) -> None:
         self._add_metakey(key, value)
