@@ -387,7 +387,6 @@ class MWDBObject(MWDBElement):
         )
         self._expire("attributes")
 
-    @APIClient.requires("2.6.0")
     def remove_comment(self, comment_id: int) -> None:
         """
         Remove specific comment from object
