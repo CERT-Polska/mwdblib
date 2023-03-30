@@ -23,11 +23,11 @@ from .main import main, pass_mwdb
 @click.pass_context
 def login_command(ctx, mwdb, username, password, via_api_key, api_key):
     """Store credentials for MWDB authentication"""
+    if username is None:
+        username = click.prompt("Username")
     if via_api_key:
         api_key = click.prompt("Provide your API key token", hide_input=True)
     if api_key is None:
-        if username is None:
-            username = click.prompt("Username")
         if password is None:
             password = click.prompt("Password", hide_input=True)
 
@@ -37,7 +37,8 @@ def login_command(ctx, mwdb, username, password, via_api_key, api_key):
             mwdb.login(username, password)
         else:
             # Set API key and check if it's correct
-            mwdb.set_api_key(api_key)
+            mwdb.api.set_api_key(api_key)
+            mwdb.api.options.username = username
             mwdb.api.get("auth/validate")
     except (InvalidCredentialsError, NotAuthenticatedError) as e:
         click.echo("Error: Login failed - {}".format(str(e)), err=True)
