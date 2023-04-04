@@ -167,6 +167,8 @@ class APIClient:
         self.set_auth_token(api_key)
         # Store credentials in API options
         self.options.api_key = api_key
+        if self.auth_token is not None:
+            self.options.username = self.auth_token.username
 
     def logout(self) -> None:
         """
