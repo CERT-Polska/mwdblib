@@ -39,7 +39,6 @@ def login_command(ctx, mwdb, username, password, via_api_key, api_key):
             # Set API key and check if it's correct
             mwdb.api.set_api_key(api_key)
             mwdb.api.get("auth/validate")
-            username = mwdb.api.logged_user
     except (InvalidCredentialsError, NotAuthenticatedError) as e:
         click.echo("Error: Login failed - {}".format(str(e)), err=True)
         ctx.abort()
