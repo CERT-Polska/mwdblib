@@ -166,7 +166,7 @@ class MWDB:
                 if query is not None:
                     params["query"] = query
                 if count is not None:
-                    params["count"] = count
+                    params["count"] = str(count)
                 # 'object', 'file', 'config' or 'blob'?
                 result = self.api.get(object_type.URL_TYPE, params=params)
                 key = object_type.URL_TYPE + "s"
