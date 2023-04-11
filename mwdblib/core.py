@@ -150,7 +150,11 @@ class MWDB:
         self.api.logout()
 
     def _recent(
-        self, object_type: Type[MWDBObjectVar], query: Optional[str] = None
+        self,
+        object_type: Type[MWDBObjectVar],
+        query: Optional[str] = None,
+        older_than: Optional[MWDBObject] = None,
+        count: Optional[int] = None,
     ) -> Iterator[MWDBObjectVar]:
         """
         Generic implementation of recent_* methods
@@ -158,9 +162,11 @@ class MWDB:
         try:
             last_object: Optional[MWDBObject] = None
             while True:
-                params = {"older_than": last_object.id} if last_object else {}
+                params = {"older_than": older_than.id} if older_than else {}
                 if query is not None:
                     params["query"] = query
+                if count is not None:
+                    params["count"] = count
                 # 'object', 'file', 'config' or 'blob'?
                 result = self.api.get(object_type.URL_TYPE, params=params)
                 key = object_type.URL_TYPE + "s"
@@ -169,10 +175,12 @@ class MWDB:
                 for obj in result[key]:
                     last_object = object_type.create(self.api, obj)
                     yield cast(MWDBObjectVar, last_object)
+                if count is not None:
+                    return
         except ObjectNotFoundError:
             return
 
-    def recent_objects(self) -> Iterator[MWDBObject]:
+    def recent_objects(self, count: Optional[int] = None) -> Iterator[MWDBObject]:
         """
         Retrieves recently uploaded objects
         If you already know type of object you are looking for,
@@ -196,37 +204,45 @@ class MWDB:
             files = islice(mwdb.recent_files(), 25)
             print([(f.name, f.tags) for f in files])
 
+        :param count: Limit number of results
+        :type count: int
         :rtype: Iterator[:class:`MWDBObject`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBObject)
+        return self._recent(MWDBObject, count=count)
 
-    def recent_files(self) -> Iterator[MWDBFile]:
+    def recent_files(self, count: Optional[int] = None) -> Iterator[MWDBFile]:
         """
         Retrieves recently uploaded files
 
+        :param count: Limit number of results
+        :type count: int
         :rtype: Iterator[:class:`MWDBFile`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBFile)
+        return self._recent(MWDBFile, count=count)
 
-    def recent_configs(self) -> Iterator[MWDBConfig]:
+    def recent_configs(self, count: Optional[int] = None) -> Iterator[MWDBConfig]:
         """
         Retrieves recently uploaded configuration objects
 
+        :param count: Limit number of results
+        :type count: int
         :rtype: Iterator[:class:`MWDBConfig`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBConfig)
+        return self._recent(MWDBConfig, count=count)
 
-    def recent_blobs(self) -> Iterator[MWDBBlob]:
+    def recent_blobs(self, count: Optional[int] = None) -> Iterator[MWDBBlob]:
         """
         Retrieves recently uploaded blob objects
 
+        :param count: Limit number of results
+        :type count: int
         :rtype: Iterator[:class:`MWDBBlob`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBBlob)
+        return self._recent(MWDBBlob, count=count)
 
     def _listen(
         self,
@@ -574,7 +590,12 @@ class MWDB:
         """
         return self._query(MWDBBlob, hash, raise_not_found)
 
-    def search(self, query: str) -> Iterator[MWDBObject]:
+    def search(
+        self,
+        query: str,
+        older_than: Optional[MWDBObject] = None,
+        count: Optional[int] = None,
+    ) -> Iterator[MWDBObject]:
         """
         Advanced search for objects using Lucene syntax.
         If you already know type of objects you are looking for,
@@ -595,43 +616,74 @@ class MWDB:
 
         :param query: Search query
         :type query: str
+        :param older_than: Return objects older than this one
+        :type older_than: MWDBObject
+        :param count: Limit number of results
+        :type count: int
         :rtype: Iterator[:class:`MWDBObject`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBObject, query)
+        return self._recent(MWDBObject, query, older_than, count)
 
-    def search_files(self, query: str) -> Iterator[MWDBFile]:
+    def search_files(
+        self,
+        query: str,
+        older_than: Optional[MWDBObject] = None,
+        count: Optional[int] = None,
+    ) -> Iterator[MWDBFile]:
         """
         Advanced search for files using Lucene syntax.
 
         :param query: Search query
         :type query: str
+        :param older_than: Return objects older than this one
+        :type older_than: MWDBObject
+        :param count: Limit number of results
+        :type count: int
         :rtype: Iterator[:class:`MWDBFile`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBFile, query)
+        return self._recent(MWDBFile, query, older_than, count)
 
-    def search_configs(self, query: str) -> Iterator[MWDBConfig]:
+    def search_configs(
+        self,
+        query: str,
+        older_than: Optional[MWDBObject] = None,
+        count: Optional[int] = None,
+    ) -> Iterator[MWDBConfig]:
         """
         Advanced search for configuration objects using Lucene syntax.
 
         :param query: Search query
         :type query: str
+        :param older_than: Return objects older than this one
+        :type older_than: MWDBObject
+        :param count: Limit number of results
+        :type count: int
         :rtype: Iterator[:class:`MWDBConfig`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBConfig, query)
+        return self._recent(MWDBConfig, query, older_than, count)
 
-    def search_blobs(self, query: str) -> Iterator[MWDBBlob]:
+    def search_blobs(
+        self,
+        query: str,
+        older_than: Optional[MWDBObject] = None,
+        count: Optional[int] = None,
+    ) -> Iterator[MWDBBlob]:
         """
         Advanced search for blob objects using Lucene syntax.
 
         :param query: Search query
         :type query: str
+        :param older_than: Return objects older than this one
+        :type older_than: MWDBObject
+        :param count: Limit number of results
+        :type count: int
         :rtype: Iterator[:class:`MWDBBlob`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBBlob, query)
+        return self._recent(MWDBBlob, query, older_than, count)
 
     def _count(
         self, object_type: Type[MWDBObjectVar], query: Optional[str] = None
