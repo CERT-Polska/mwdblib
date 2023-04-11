@@ -160,9 +160,9 @@ class MWDB:
         Generic implementation of recent_* methods
         """
         try:
-            last_object: Optional[MWDBObject] = None
+            last_object = older_than
             while True:
-                params = {"older_than": older_than.id} if older_than else {}
+                params = {"older_than": last_object.id} if last_object else {}
                 if query is not None:
                     params["query"] = query
                 if count is not None:
