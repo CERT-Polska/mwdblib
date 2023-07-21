@@ -1053,3 +1053,9 @@ class MWDB:
         )
         result = self.api.post("blob", json=params)
         return MWDBBlob(self.api, result)
+
+    def __repr__(self) -> str:
+        return (
+            f"MWDB(api_url={repr(self.api.options.api_url)}, "
+            f"username={repr(self.api.logged_user)})"
+        )

@@ -28,3 +28,6 @@ class MWDBKartonAnalysis(MWDBElement):
     @property
     def processing_in(self) -> Dict[str, Any]:
         return cast(Dict[str, Any], self.data["processing_in"])
+
+    def __repr__(self) -> str:
+        return f"MWDBKartonAnalysis(id={repr(self.id)})"

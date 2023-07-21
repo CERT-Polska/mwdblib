@@ -75,3 +75,9 @@ class MWDBConfig(MWDBObject):
         .. seealso:: :py:attr:`config_dict`
         """
         return self.config
+
+    def __repr__(self) -> str:
+        return (
+            f"MWDBConfig(id={repr(self.id)}, family={repr(self.family)}, "
+            f"type={repr(self.type)})"
+        )

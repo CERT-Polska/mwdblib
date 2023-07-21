@@ -155,3 +155,6 @@ class MWDBFile(MWDBObject):
             "/"
         )[-1]
         return cast(bytes, self.api.get("download/{}".format(token), raw=True))
+
+    def __repr__(self) -> str:
+        return f"MWDBFile(sha256={repr(self.id)}, name={repr(self.file_name)})"
