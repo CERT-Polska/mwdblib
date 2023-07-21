@@ -201,7 +201,7 @@ class MWDB:
             files = islice(mwdb.recent_files(), 25)
             print([(f.name, f.tags) for f in files])
 
-        :param chunk_size: Number of files returned per API request
+        :param chunk_size: Number of objects returned per API request
         :type chunk_size: int
         :rtype: Iterator[:class:`MWDBObject`]
         :raises: requests.exceptions.HTTPError
@@ -630,7 +630,7 @@ class MWDB:
         :rtype: Iterator[:class:`MWDBFile`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBFile, query, chunk_size)
+        return self._recent(MWDBFile, query, chunk_size=chunk_size)
 
     def search_configs(
         self, query: str, chunk_size: Optional[int] = None
