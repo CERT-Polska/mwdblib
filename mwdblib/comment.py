@@ -52,3 +52,6 @@ class MWDBComment(MWDBElement):
         Deletes this comment
         """
         self.api.delete("object/{}/comment/{}".format(self.parent.id, self.id))
+
+    def __repr__(self) -> str:
+        return f"MWDBComment(id={repr(self.id)}, author={repr(self.author)})"

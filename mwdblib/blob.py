@@ -95,3 +95,9 @@ class MWDBBlob(MWDBObject):
         if "last_seen" not in self.data:
             self._load()
         return datetime.datetime.fromisoformat(self.data["last_seen"])
+
+    def __repr__(self) -> str:
+        return (
+            f"MWDBBlob(id={repr(self.id)}, name={repr(self.blob_name)}, "
+            f"type={repr(self.blob_type)})"
+        )
