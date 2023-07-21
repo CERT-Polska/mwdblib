@@ -36,6 +36,8 @@ class MWDB:
     :param api_key: MWDB API key
     :param username: MWDB account username
     :param password: MWDB account password
+    :param autologin: Login automatically using credentials stored in configuration
+        or provided in arguments (default: True)
     :param verify_ssl: Verify SSL certificate correctness (default: True)
     :param obey_ratelimiter: If ``False``, HTTP 429 errors will cause an exception
         like all other error codes.
@@ -77,6 +79,9 @@ class MWDB:
     .. versionadded:: 4.0.0
        Added ``use_keyring``, ``emit_warnings`` and ``config_path`` options.
        ``username`` and ``password`` can be passed directly to the constructor.
+
+    .. versionadded:: 4.4.0
+       Added ``autologin`` option.
 
     Usage example:
 
