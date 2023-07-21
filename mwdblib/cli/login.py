@@ -51,7 +51,14 @@ def login_command(ctx, mwdb, username, password, use_keyring, via_api_key, api_k
     except (InvalidCredentialsError, NotAuthenticatedError) as e:
         click.echo("Error: Login failed - {}".format(str(e)), err=True)
         ctx.abort()
-    mwdb.api.options.store_credentials()
+    mwdb.api.options.store_credentials(username, password, api_key)
+    if not mwdb.api.options.use_keyring:
+        click.echo(
+            f"Warning! Your password is stored in plaintext in "
+            f"{mwdb.api.options.config_path}. Use --use-keyring to store "
+            f"credentials in keyring (if available on your system).",
+            err=True,
+        )
     click.echo(
         f"Logged in successfully to {mwdb.api.options.api_url} "
         f"as {mwdb.api.logged_user}",
@@ -63,5 +70,9 @@ def login_command(ctx, mwdb, username, password, use_keyring, via_api_key, api_k
 @pass_mwdb(autologin=False)
 def logout_command(mwdb):
     """Reset stored credentials"""
-    mwdb.api.options.clear_stored_credentials()
-    click.echo(f"Logged out successfully from {mwdb.api.options.api_url}", err=True)
+    if mwdb.api.options.clear_stored_credentials():
+        click.echo(f"Logged out successfully from {mwdb.api.options.api_url}", err=True)
+    else:
+        click.echo(
+            f"Error: user already logged out from {mwdb.api.options.api_url}!", err=True
+        )

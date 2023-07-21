@@ -158,14 +158,14 @@ class APIClientOptions:
                     f"mwdb:{self.api_url}", self.username
                 )
 
-    def clear_stored_credentials(self, config_writeback: bool = True) -> None:
+    def clear_stored_credentials(self, config_writeback: bool = True) -> bool:
         """
         Clears stored credentials in configuration for current user.
 
         Used by ``mwdb logout`` CLI command.
         """
         if not self.username:
-            return
+            return False
         # Remove credentials from keyring
         if self.use_keyring:
             try:
@@ -188,15 +188,21 @@ class APIClientOptions:
             if config_writeback and self.config_path:
                 with self.config_path.open("w") as f:
                     self.config_parser.write(f)
+        return True
 
-    def store_credentials(self) -> None:
+    def store_credentials(
+        self, username: Optional[str], password: Optional[str], api_key: Optional[str]
+    ) -> bool:
         """
         Stores current credentials in configuration for current user.
 
         Used by ``mwdb login`` CLI command.
         """
-        if not self.username or (not self.api_key and not self.password):
-            return
+        if not username or (not api_key and not password):
+            return False
+        self.username = username
+        self.password = password
+        self.api_key = api_key
         # Clear currently stored credentials
         self.clear_stored_credentials(config_writeback=False)
         # Ensure that 'mwdb' section exists in configuration
@@ -215,18 +221,23 @@ class APIClientOptions:
                 keyring.set_password(
                     f"mwdb-apikey:{self.api_url}", self.username, self.api_key
                 )
-            else:
+            elif self.password:
                 keyring.set_password(
                     f"mwdb:{self.api_url}", self.username, self.password
                 )
+            else:
+                raise RuntimeError("Implementation error: no api_key nor password")
             self.config_parser.set(instance_section, "use_keyring", "1")
         else:
             if self.api_key:
                 self.config_parser.set(instance_section, "api_key", self.api_key)
-            else:
+            elif self.password:
                 self.config_parser.set(instance_section, "password", self.password)
+            else:
+                raise RuntimeError("Implementation error: no api_key nor password")
             self.config_parser.set(instance_section, "use_keyring", "0")
         # Perform configuration writeback
         if self.config_path:
             with self.config_path.open("w") as f:
                 self.config_parser.write(f)
+        return True
