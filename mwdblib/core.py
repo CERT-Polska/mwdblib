@@ -150,7 +150,10 @@ class MWDB:
         self.api.logout()
 
     def _recent(
-        self, object_type: Type[MWDBObjectVar], query: Optional[str] = None
+        self,
+        object_type: Type[MWDBObjectVar],
+        query: Optional[str] = None,
+        chunk_size: Optional[int] = None,
     ) -> Iterator[MWDBObjectVar]:
         """
         Generic implementation of recent_* methods
@@ -161,6 +164,8 @@ class MWDB:
                 params = {"older_than": last_object.id} if last_object else {}
                 if query is not None:
                     params["query"] = query
+                if chunk_size is not None:
+                    params["count"] = str(chunk_size)
                 # 'object', 'file', 'config' or 'blob'?
                 result = self.api.get(object_type.URL_TYPE, params=params)
                 key = object_type.URL_TYPE + "s"
@@ -172,7 +177,7 @@ class MWDB:
         except ObjectNotFoundError:
             return
 
-    def recent_objects(self) -> Iterator[MWDBObject]:
+    def recent_objects(self, chunk_size: Optional[int] = None) -> Iterator[MWDBObject]:
         """
         Retrieves recently uploaded objects
         If you already know type of object you are looking for,
@@ -196,37 +201,45 @@ class MWDB:
             files = islice(mwdb.recent_files(), 25)
             print([(f.name, f.tags) for f in files])
 
+        :param chunk_size: Number of objects returned per API request
+        :type chunk_size: int
         :rtype: Iterator[:class:`MWDBObject`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBObject)
+        return self._recent(MWDBObject, chunk_size=chunk_size)
 
-    def recent_files(self) -> Iterator[MWDBFile]:
+    def recent_files(self, chunk_size: Optional[int] = None) -> Iterator[MWDBFile]:
         """
         Retrieves recently uploaded files
 
+        :param chunk_size: Number of files returned per API request
+        :type chunk_size: int
         :rtype: Iterator[:class:`MWDBFile`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBFile)
+        return self._recent(MWDBFile, chunk_size=chunk_size)
 
-    def recent_configs(self) -> Iterator[MWDBConfig]:
+    def recent_configs(self, chunk_size: Optional[int] = None) -> Iterator[MWDBConfig]:
         """
         Retrieves recently uploaded configuration objects
 
+        :param chunk_size: Number of configs returned per API request
+        :type chunk_size: int
         :rtype: Iterator[:class:`MWDBConfig`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBConfig)
+        return self._recent(MWDBConfig, chunk_size=chunk_size)
 
-    def recent_blobs(self) -> Iterator[MWDBBlob]:
+    def recent_blobs(self, chunk_size: Optional[int] = None) -> Iterator[MWDBBlob]:
         """
         Retrieves recently uploaded blob objects
 
+        :param chunk_size: Number of blobs returned per API request
+        :type chunk_size: int
         :rtype: Iterator[:class:`MWDBBlob`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBBlob)
+        return self._recent(MWDBBlob, chunk_size=chunk_size)
 
     def _listen(
         self,
@@ -574,7 +587,9 @@ class MWDB:
         """
         return self._query(MWDBBlob, hash, raise_not_found)
 
-    def search(self, query: str) -> Iterator[MWDBObject]:
+    def search(
+        self, query: str, chunk_size: Optional[int] = None
+    ) -> Iterator[MWDBObject]:
         """
         Advanced search for objects using Lucene syntax.
         If you already know type of objects you are looking for,
@@ -595,43 +610,57 @@ class MWDB:
 
         :param query: Search query
         :type query: str
+        :param chunk_size: Number of objects returned per API request
+        :type chunk_size: int
         :rtype: Iterator[:class:`MWDBObject`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBObject, query)
+        return self._recent(MWDBObject, query, chunk_size=chunk_size)
 
-    def search_files(self, query: str) -> Iterator[MWDBFile]:
+    def search_files(
+        self, query: str, chunk_size: Optional[int] = None
+    ) -> Iterator[MWDBFile]:
         """
         Advanced search for files using Lucene syntax.
 
         :param query: Search query
         :type query: str
+        :param chunk_size: Number of files returned per API request
+        :type chunk_size: int
         :rtype: Iterator[:class:`MWDBFile`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBFile, query)
+        return self._recent(MWDBFile, query, chunk_size=chunk_size)
 
-    def search_configs(self, query: str) -> Iterator[MWDBConfig]:
+    def search_configs(
+        self, query: str, chunk_size: Optional[int] = None
+    ) -> Iterator[MWDBConfig]:
         """
         Advanced search for configuration objects using Lucene syntax.
 
         :param query: Search query
         :type query: str
+        :param chunk_size: Number of configs returned per API request
+        :type chunk_size: int
         :rtype: Iterator[:class:`MWDBConfig`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBConfig, query)
+        return self._recent(MWDBConfig, query, chunk_size=chunk_size)
 
-    def search_blobs(self, query: str) -> Iterator[MWDBBlob]:
+    def search_blobs(
+        self, query: str, chunk_size: Optional[int] = None
+    ) -> Iterator[MWDBBlob]:
         """
         Advanced search for blob objects using Lucene syntax.
 
         :param query: Search query
         :type query: str
+        :param chunk_size: Number of blobs returned per API request
+        :type chunk_size: int
         :rtype: Iterator[:class:`MWDBBlob`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBBlob, query)
+        return self._recent(MWDBBlob, query, chunk_size=chunk_size)
 
     def _count(
         self, object_type: Type[MWDBObjectVar], query: Optional[str] = None
