@@ -144,10 +144,7 @@ class MWDBFile(MWDBObject):
            print("Downloaded {}".format(dropper.file_name))
         """
         download_endpoint = "file/{id}/download".format(**self.data)
-        token = self.api.post(download_endpoint)["token"]
-        return cast(
-            bytes, self.api.get(download_endpoint, params={"token": token}, raw=True)
-        )
+        return cast(bytes, self.api.get(download_endpoint, raw=True))
 
     @download.fallback("2.0.0")
     def download_legacy(self) -> bytes:
