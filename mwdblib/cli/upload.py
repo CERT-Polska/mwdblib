@@ -36,6 +36,12 @@ def upload_params(fn):
     @click.option(
         "--share-with", default=None, help="Share object with specified group"
     )
+    @click.option(
+        "--tag",
+        multiple=True,
+        help="Add specified tag to the object",
+        default=[],
+    )
     @functools.wraps(fn)
     def upload_wrapped_command(*args, **kwargs):
         if (
@@ -66,7 +72,7 @@ def upload_params(fn):
 @upload_params
 @confirm_action
 @pass_mwdb
-def upload_file(mwdb, file, name, parent, private, public, share_with):
+def upload_file(mwdb, file, name, parent, private, public, share_with, tag):
     """Upload file object"""
     with click.open_file(file, "rb") as f:
         content = f.read()
@@ -78,6 +84,7 @@ def upload_file(mwdb, file, name, parent, private, public, share_with):
         private=private,
         public=public,
         share_with=share_with,
+        tags=tag,
     )
     return dict(message="Uploaded file {object_id}", object_id=obj.id)
 
@@ -90,7 +97,15 @@ def upload_file(mwdb, file, name, parent, private, public, share_with):
 @confirm_action
 @pass_mwdb
 def upload_config(
-    mwdb, family, config_file, config_type, parent, private, public, share_with
+    mwdb,
+    family,
+    config_file,
+    config_type,
+    parent,
+    private,
+    public,
+    share_with,
+    tag,
 ):
     """Upload config object"""
     import json
@@ -105,6 +120,7 @@ def upload_config(
         private=private,
         public=public,
         share_with=share_with,
+        tags=tag,
     )
     return dict(message="Uploaded config {object_id}", object_id=obj.id)
 
@@ -120,7 +136,9 @@ def upload_config(
 @upload_params
 @confirm_action
 @pass_mwdb
-def upload_blob(mwdb, blob_type, blob_file, name, parent, private, public, share_with):
+def upload_blob(
+    mwdb, blob_type, blob_file, name, parent, private, public, share_with, tag
+):
     """Upload blob object"""
     with click.open_file(blob_file, "rb") as f:
         content = f.read()
@@ -133,5 +151,6 @@ def upload_blob(mwdb, blob_type, blob_file, name, parent, private, public, share
         private=private,
         public=public,
         share_with=share_with,
+        tags=tag,
     )
     return dict(message="Uploaded blob {object_id}", object_id=obj.id)
