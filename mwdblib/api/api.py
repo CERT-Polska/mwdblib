@@ -98,9 +98,9 @@ class APIClient:
 
         from ..__version__ import __version__
 
-        self.session.headers[
-            "User-Agent"
-        ] = f'mwdblib/{__version__} {str(self.session.headers["User-Agent"])}'
+        self.session.headers["User-Agent"] = (
+            f'mwdblib/{__version__} {str(self.session.headers["User-Agent"])}'
+        )
 
         if _auth_token:
             self.set_auth_token(_auth_token)
@@ -358,7 +358,7 @@ class APIClient:
 
                 return fallback_decorator
 
-            def __get__(self, obj: UsesAPI, objtype: Type = None) -> Callable:
+            def __get__(self, obj: UsesAPI, objtype: Optional[Type] = None) -> Callable:
                 # See also:
                 # https://docs.python.org/3/howto/descriptor.html#functions-and-methods
                 if obj is None:
