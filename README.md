@@ -77,6 +77,9 @@ If you log in via CLI, your credentials will be stored in configuration file (`~
 default by `MWDB()` objects, so you don't have to login each time when you use e.g. IPython session to interact
 with MWDB Core API.
 
+If you experience problems with keyring when trying to run `mwdb login`, you need to either configure keyring on your
+system (https://pypi.org/project/keyring), or use the less secure plaintext storage with `--no-keyring` CLI option.
+
 ## Using mwdblib with own MWDB Core instance
 
 Default API endpoint that is used by mwdblib is `https://mwdb.cert.pl/api/` service (CERT.pl MWDB instance), but
