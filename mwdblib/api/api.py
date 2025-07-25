@@ -358,7 +358,7 @@ class APIClient:
 
                 return fallback_decorator
 
-            def __get__(self, obj: UsesAPI, objtype: Type = None) -> Callable:
+            def __get__(self, obj: UsesAPI, objtype: Optional[Type] = None) -> Callable:
                 # See also:
                 # https://docs.python.org/3/howto/descriptor.html#functions-and-methods
                 if obj is None:
