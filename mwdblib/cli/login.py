@@ -58,7 +58,8 @@ def login_command(ctx, mwdb, username, password, use_keyring, via_api_key, api_k
         click.echo(
             "Failed to login! Keyring is not available on this system. "
             "See https://pypi.org/project/keyring for details, or use the (insecure) "
-            "--no-keyring option."
+            "--no-keyring option.",
+            err=True,
         )
         return
     if not mwdb.api.options.use_keyring:
