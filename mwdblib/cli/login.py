@@ -1,4 +1,5 @@
 import click
+from keyring.errors import NoKeyringError
 
 from ..exc import InvalidCredentialsError, NotAuthenticatedError
 from .main import main, pass_mwdb
@@ -51,7 +52,15 @@ def login_command(ctx, mwdb, username, password, use_keyring, via_api_key, api_k
     except (InvalidCredentialsError, NotAuthenticatedError) as e:
         click.echo("Error: Login failed - {}".format(str(e)), err=True)
         ctx.abort()
-    mwdb.api.options.store_credentials(username, password, api_key)
+    try:
+        mwdb.api.options.store_credentials(username, password, api_key)
+    except NoKeyringError:
+        click.echo(
+            "Failed to login! Keyring is not available on this system. "
+            "See https://pypi.org/project/keyring for details, or use the (insecure) "
+            "--no-keyring option."
+        )
+        return
     if not mwdb.api.options.use_keyring:
         click.echo(
             f"Warning! Your password is stored in plaintext in "
