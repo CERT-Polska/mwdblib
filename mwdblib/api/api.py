@@ -98,9 +98,9 @@ class APIClient:
 
         from ..__version__ import __version__
 
-        self.session.headers[
-            "User-Agent"
-        ] = f'mwdblib/{__version__} {str(self.session.headers["User-Agent"])}'
+        self.session.headers["User-Agent"] = (
+            f'mwdblib/{__version__} {str(self.session.headers["User-Agent"])}'
+        )
 
         if _auth_token:
             self.set_auth_token(_auth_token)
