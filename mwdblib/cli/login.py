@@ -61,7 +61,7 @@ def login_command(ctx, mwdb, username, password, use_keyring, via_api_key, api_k
             "--no-keyring option.",
             err=True,
         )
-        return
+        ctx.abort()
     if not mwdb.api.options.use_keyring:
         click.echo(
             f"Warning! Your password is stored in plaintext in "
