@@ -159,14 +159,15 @@ class MWDB:
         object_type: Type[MWDBObjectVar],
         query: Optional[str] = None,
         chunk_size: Optional[int] = None,
+        older_than: Optional[str] = None,
     ) -> Iterator[MWDBObjectVar]:
         """
         Generic implementation of recent_* methods
         """
         try:
-            last_object: Optional[MWDBObject] = None
+            last_object_id: Optional[str] = older_than
             while True:
-                params = {"older_than": last_object.id} if last_object else {}
+                params = {"older_than": last_object_id} if last_object_id else {}
                 if query is not None:
                     params["query"] = query
                 if chunk_size is not None:
@@ -179,10 +180,13 @@ class MWDB:
                 for obj in result[key]:
                     last_object = object_type.create(self.api, obj)
                     yield cast(MWDBObjectVar, last_object)
+                    last_object_id = last_object.id
         except ObjectNotFoundError:
             return
 
-    def recent_objects(self, chunk_size: Optional[int] = None) -> Iterator[MWDBObject]:
+    def recent_objects(
+        self, chunk_size: Optional[int] = None, older_than: Optional[str] = None
+    ) -> Iterator[MWDBObject]:
         """
         Retrieves recently uploaded objects
         If you already know type of object you are looking for,
@@ -206,45 +210,75 @@ class MWDB:
             files = islice(mwdb.recent_files(), 25)
             print([(f.name, f.tags) for f in files])
 
+        .. versionchanged:: 4.6.0
+
+           Added older_than parameter
+
         :param chunk_size: Number of objects returned per API request
         :type chunk_size: int
+        :poram older_than: Fetch objects older than one with provided id
+        :type older_than: str
         :rtype: Iterator[:class:`MWDBObject`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBObject, chunk_size=chunk_size)
+        return self._recent(MWDBObject, chunk_size=chunk_size, older_than=older_than)
 
-    def recent_files(self, chunk_size: Optional[int] = None) -> Iterator[MWDBFile]:
+    def recent_files(
+        self, chunk_size: Optional[int] = None, older_than: Optional[str] = None
+    ) -> Iterator[MWDBFile]:
         """
         Retrieves recently uploaded files
 
+        .. versionchanged:: 4.6.0
+
+           Added older_than parameter
+
         :param chunk_size: Number of files returned per API request
         :type chunk_size: int
+        :poram older_than: Fetch objects older than one with provided id
+        :type older_than: str
         :rtype: Iterator[:class:`MWDBFile`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBFile, chunk_size=chunk_size)
+        return self._recent(MWDBFile, chunk_size=chunk_size, older_than=older_than)
 
-    def recent_configs(self, chunk_size: Optional[int] = None) -> Iterator[MWDBConfig]:
+    def recent_configs(
+        self, chunk_size: Optional[int] = None, older_than: Optional[str] = None
+    ) -> Iterator[MWDBConfig]:
         """
         Retrieves recently uploaded configuration objects
 
+        .. versionchanged:: 4.6.0
+
+           Added older_than parameter
+
         :param chunk_size: Number of configs returned per API request
         :type chunk_size: int
+        :poram older_than: Fetch objects older than one with provided id
+        :type older_than: str
         :rtype: Iterator[:class:`MWDBConfig`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBConfig, chunk_size=chunk_size)
+        return self._recent(MWDBConfig, chunk_size=chunk_size, older_than=older_than)
 
-    def recent_blobs(self, chunk_size: Optional[int] = None) -> Iterator[MWDBBlob]:
+    def recent_blobs(
+        self, chunk_size: Optional[int] = None, older_than: Optional[str] = None
+    ) -> Iterator[MWDBBlob]:
         """
         Retrieves recently uploaded blob objects
 
+        .. versionchanged:: 4.6.0
+
+           Added older_than parameter
+
         :param chunk_size: Number of blobs returned per API request
         :type chunk_size: int
+        :poram older_than: Fetch objects older than one with provided id
+        :type older_than: str
         :rtype: Iterator[:class:`MWDBBlob`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBBlob, chunk_size=chunk_size)
+        return self._recent(MWDBBlob, chunk_size=chunk_size, older_than=older_than)
 
     def _listen(
         self,
@@ -593,7 +627,10 @@ class MWDB:
         return self._query(MWDBBlob, hash, raise_not_found)
 
     def search(
-        self, query: str, chunk_size: Optional[int] = None
+        self,
+        query: str,
+        chunk_size: Optional[int] = None,
+        older_than: Optional[str] = None,
     ) -> Iterator[MWDBObject]:
         """
         Advanced search for objects using Lucene syntax.
@@ -613,59 +650,100 @@ class MWDB:
             # Search for samples tagged as evil and with size less than 100kB
             results = mwdb.search_files("tag:evil AND file.size:[0 TO 100000]")
 
+        .. versionchanged:: 4.6.0
+
+           Added older_than parameter
+
         :param query: Search query
         :type query: str
         :param chunk_size: Number of objects returned per API request
         :type chunk_size: int
+        :poram older_than: Fetch objects older than one with provided id
+        :type older_than: str
         :rtype: Iterator[:class:`MWDBObject`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBObject, query, chunk_size=chunk_size)
+        return self._recent(
+            MWDBObject, query, chunk_size=chunk_size, older_than=older_than
+        )
 
     def search_files(
-        self, query: str, chunk_size: Optional[int] = None
+        self,
+        query: str,
+        chunk_size: Optional[int] = None,
+        older_than: Optional[str] = None,
     ) -> Iterator[MWDBFile]:
         """
         Advanced search for files using Lucene syntax.
+
+        .. versionchanged:: 4.6.0
+
+           Added older_than parameter
 
         :param query: Search query
         :type query: str
         :param chunk_size: Number of files returned per API request
         :type chunk_size: int
+        :poram older_than: Fetch objects older than one with provided id
+        :type older_than: str
         :rtype: Iterator[:class:`MWDBFile`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBFile, query, chunk_size=chunk_size)
+        return self._recent(
+            MWDBFile, query, chunk_size=chunk_size, older_than=older_than
+        )
 
     def search_configs(
-        self, query: str, chunk_size: Optional[int] = None
+        self,
+        query: str,
+        chunk_size: Optional[int] = None,
+        older_than: Optional[str] = None,
     ) -> Iterator[MWDBConfig]:
         """
         Advanced search for configuration objects using Lucene syntax.
+
+        .. versionchanged:: 4.6.0
+
+           Added older_than parameter
 
         :param query: Search query
         :type query: str
         :param chunk_size: Number of configs returned per API request
         :type chunk_size: int
+        :poram older_than: Fetch objects older than one with provided id
+        :type older_than: str
         :rtype: Iterator[:class:`MWDBConfig`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBConfig, query, chunk_size=chunk_size)
+        return self._recent(
+            MWDBConfig, query, chunk_size=chunk_size, older_than=older_than
+        )
 
     def search_blobs(
-        self, query: str, chunk_size: Optional[int] = None
+        self,
+        query: str,
+        chunk_size: Optional[int] = None,
+        older_than: Optional[str] = None,
     ) -> Iterator[MWDBBlob]:
         """
         Advanced search for blob objects using Lucene syntax.
+
+        .. versionchanged:: 4.6.0
+
+           Added older_than parameter
 
         :param query: Search query
         :type query: str
         :param chunk_size: Number of blobs returned per API request
         :type chunk_size: int
+        :poram older_than: Fetch objects older than one with provided id
+        :type older_than: str
         :rtype: Iterator[:class:`MWDBBlob`]
         :raises: requests.exceptions.HTTPError
         """
-        return self._recent(MWDBBlob, query, chunk_size=chunk_size)
+        return self._recent(
+            MWDBBlob, query, chunk_size=chunk_size, older_than=older_than
+        )
 
     def _count(
         self, object_type: Type[MWDBObjectVar], query: Optional[str] = None
