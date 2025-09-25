@@ -40,11 +40,11 @@ class JWTAuthToken:
             header, payload, signature = value.split(".")
             self.header = json.loads(base64.b64decode(header + "=="))
             self.payload = json.loads(base64.b64decode(payload + "=="))
-        except ValueError:
+        except ValueError as exc:
             raise InvalidCredentialsError(
                 "Invalid authentication token. Verify whether actual token is provided "
                 "instead of its UUID."
-            )
+            ) from exc
 
     @property
     def is_expired(self) -> bool:
@@ -200,7 +200,7 @@ class APIClient:
             mapped_error = map_http_error(http_error)
             if mapped_error is None:
                 raise
-            raise mapped_error
+            raise mapped_error from http_error
 
     def request(
         self,
@@ -255,12 +255,12 @@ class APIClient:
                 response = self.perform_request(method, url, *args, **kwargs)
                 try:
                     return response.json() if not raw else response.content
-                except ValueError:
+                except ValueError as exc:
                     raise BadResponseError(
                         "Can't decode JSON response from server. "
                         "Probably APIClient.api_url points to the MWDB web app "
                         "instead of MWDB REST API."
-                    )
+                    ) from exc
             except NotAuthenticatedError:
                 # Forget current auth_key
                 self.logout()
