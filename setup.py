@@ -18,7 +18,7 @@ setup(
     packages=["mwdblib", "mwdblib.api", "mwdblib.cli", "mwdblib.cli.formatters"],
     package_data={"mwdblib": ["py.typed"]},
     url="https://github.com/CERT-Polska/mwdblib",
-    python_requires=">=3.9",
+    python_requires=">=3.10",
     install_requires=["requests", "keyring>=18.0.0"],
     extras_require={
         "cli": [
