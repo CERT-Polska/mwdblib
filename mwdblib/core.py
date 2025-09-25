@@ -164,25 +164,22 @@ class MWDB:
         """
         Generic implementation of recent_* methods
         """
-        try:
-            last_object_id: Optional[str] = older_than
-            while True:
-                params = {"older_than": last_object_id} if last_object_id else {}
-                if query is not None:
-                    params["query"] = query
-                if chunk_size is not None:
-                    params["count"] = str(chunk_size)
-                # 'object', 'file', 'config' or 'blob'?
-                result = self.api.get(object_type.URL_TYPE, params=params)
-                key = object_type.URL_TYPE + "s"
-                if key not in result or len(result[key]) == 0:
-                    return
-                for obj in result[key]:
-                    last_object = object_type.create(self.api, obj)
-                    yield cast(MWDBObjectVar, last_object)
-                    last_object_id = last_object.id
-        except ObjectNotFoundError:
-            return
+        last_object_id: Optional[str] = older_than
+        while True:
+            params = {"older_than": last_object_id} if last_object_id else {}
+            if query is not None:
+                params["query"] = query
+            if chunk_size is not None:
+                params["count"] = str(chunk_size)
+            # 'object', 'file', 'config' or 'blob'?
+            result = self.api.get(object_type.URL_TYPE, params=params)
+            key = object_type.URL_TYPE + "s"
+            if key not in result or len(result[key]) == 0:
+                return
+            for obj in result[key]:
+                last_object = object_type.create(self.api, obj)
+                yield cast(MWDBObjectVar, last_object)
+                last_object_id = last_object.id
 
     def recent_objects(
         self, chunk_size: Optional[int] = None, older_than: Optional[str] = None
