@@ -6,7 +6,7 @@ import re
 import time
 import warnings
 from types import MethodType
-from typing import Any, Callable, List, Optional, Tuple, Type, cast
+from typing import Any, Callable, List, Optional, Protocol, Tuple, Type, cast
 from urllib.parse import urljoin
 
 import requests
@@ -25,11 +25,9 @@ from ..exc import (
 from .options import APIClientOptions
 
 
-# TODO: Protocol typing is available from Python 3.8
-class UsesAPI:
+class UsesAPI(Protocol):
     """
-    Typing for classes that are bound with APIClient,
-    set on self.api attribute
+    Protocol for classes that are bound with APIClient
     """
 
     api: "APIClient"
