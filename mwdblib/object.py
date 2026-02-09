@@ -311,6 +311,8 @@ class MWDBObject(MWDBElement):
 
         .. versionadded:: 4.7.0
         """
+        from .karton import MWDBKartonAnalysis
+
         last_analysis_id: Optional[str] = older_than
         while True:
             params = {"older_than": last_analysis_id} if last_analysis_id else {}
