@@ -1,7 +1,17 @@
 import datetime
 import warnings
 from collections import defaultdict
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Union,
+    cast,
+)
 
 from .api import APIClient
 
@@ -272,6 +282,11 @@ class MWDBObject(MWDBElement):
 
         Requires MWDB Core >= 2.3.0.
 
+        Returns only 10 most recent analyses in MWDB Core >= 2.17.0.
+        It should be enough for checking the analysis status, but if
+        you want to get complete list of analyses - use :py:meth:`iter_analyses`
+        instead.
+
         .. versionadded:: 4.0.0
         """
         from .karton import MWDBKartonAnalysis
@@ -284,6 +299,30 @@ class MWDBObject(MWDBElement):
         return [
             MWDBKartonAnalysis(self.api, analysis) for analysis in self.data["analyses"]
         ]
+
+    @APIClient.requires("2.17.0")
+    def iter_analyses(
+        self, older_than: Optional[str] = None
+    ) -> Iterator["MWDBKartonAnalysis"]:
+        """
+        Iterates Karton analyses related with this object
+
+        Requires MWDB Core >= 2.17.0.
+
+        .. versionadded:: 4.7.0
+        """
+        from .karton import MWDBKartonAnalysis
+
+        last_analysis_id: Optional[str] = older_than
+        while True:
+            params = {"older_than": last_analysis_id} if last_analysis_id else {}
+            result = self.api.get(f"object/{self.id}/karton", params=params)
+            if len(result["analyses"]) == 0:
+                return
+            for obj in result["analyses"]:
+                last_analysis = MWDBKartonAnalysis(self.api, obj)
+                yield last_analysis
+                last_analysis_id = last_analysis.id
 
     @property
     def content(self) -> bytes:
