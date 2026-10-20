@@ -93,6 +93,7 @@ class TabularFormatter(ObjectFormatter):
         return self.format_attr_table(
             [
                 ["File name", AttributeFormatter(), file.name],
+                ["Variant file names", AttributeFormatter(), file.alt_names],
                 ["File size", SizeFormatter(), file.size],
                 ["File type", AttributeFormatter(), file.type],
                 ["MD5", AttributeFormatter(), file.md5],

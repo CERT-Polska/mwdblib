@@ -56,6 +56,15 @@ class MWDBFile(MWDBObject):
         return cast(str, self.data["file_name"])
 
     @property
+    def alt_names(self) -> list[str]:
+        """
+        Sample variant filenames
+        """
+        if "alt_names" not in self.data:
+            self._load()
+        return cast(list[str], self.data["alt_names"])
+
+    @property
     def file_size(self) -> int:
         """
         Sample size in bytes
